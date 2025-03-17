@@ -4,14 +4,16 @@ import { LinearGradient } from 'expo-linear-gradient'
 import PrimaryButton from '../components/PrimaryButton'
 import SecondaryButton from '../components/SecondaryButton'
 import { StatusBar } from 'expo-status-bar';
+import { useNavigation } from '@react-navigation/native'
 
 
 function WelcomeScreen() {
+    const navigation = useNavigation()
     function createAccountHandler(){
-        console.log('Create Account button pressed')
+        navigation.navigate('CreateAccount')
     }
     function loginHandler(){
-        console.log('Login button pressed')
+        navigation.navigate('Login')
     }
     return (
         <SafeAreaView style={styles.safeArea}>
