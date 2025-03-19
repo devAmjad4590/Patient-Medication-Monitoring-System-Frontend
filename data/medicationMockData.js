@@ -1,0 +1,131 @@
+const mockMedicationEntries = [
+    {
+      id: "1",
+      userId: "101",
+      name: "Paracetamol",
+      dosage: "500mg",
+      type: "Tablet",
+      instructions: "Take after food",
+      stock: 20,
+      intakeSchedule: [
+        { id: "a1", intakeTime: "2025-03-20T08:00:00Z", status: "Pending" },
+        { id: "a2", intakeTime: "2025-03-20T20:00:00Z", status: "Pending" },
+      ],
+    },
+    {
+      id: "2",
+      userId: "102",
+      name: "Ibuprofen",
+      dosage: "200mg",
+      type: "Capsule",
+      instructions: "Take with water",
+      stock: 10,
+      intakeSchedule: [
+        { id: "b1", intakeTime: "2025-03-20T09:00:00Z", status: "Pending" },
+        { id: "b2", intakeTime: "2025-03-20T21:00:00Z", status: "Pending" },
+      ],
+    },
+    {
+      id: "3",
+      userId: "103",
+      name: "Amoxicillin",
+      dosage: "250mg",
+      type: "Antibiotic",
+      instructions: "Take every 8 hours",
+      stock: 15,
+      intakeSchedule: [
+        { id: "c1", intakeTime: "2025-03-20T08:00:00Z", status: "Pending" },
+        { id: "c2", intakeTime: "2025-03-20T16:00:00Z", status: "Pending" },
+        { id: "c3", intakeTime: "2025-03-20T00:00:00Z", status: "Pending" },
+      ],
+    },
+    {
+      id: "4",
+      userId: "104",
+      name: "Cetirizine",
+      dosage: "10mg",
+      type: "Antihistamine",
+      instructions: "Take once daily",
+      stock: 30,
+      intakeSchedule: [
+        { id: "d1", intakeTime: "2025-03-20T22:00:00Z", status: "Pending" },
+      ],
+    },
+    {
+      id: "5",
+      userId: "105",
+      name: "Metformin",
+      dosage: "500mg",
+      type: "Diabetes Medication",
+      instructions: "Take with meals",
+      stock: 25,
+      intakeSchedule: [
+        { id: "e1", intakeTime: "2025-03-20T07:00:00Z", status: "Pending" },
+        { id: "e2", intakeTime: "2025-03-20T19:00:00Z", status: "Pending" },
+      ],
+    },
+    {
+      id: "6",
+      userId: "106",
+      name: "Lisinopril",
+      dosage: "10mg",
+      type: "Blood Pressure Medication",
+      instructions: "Take in the morning",
+      stock: 40,
+      intakeSchedule: [
+        { id: "f1", intakeTime: "2025-03-20T08:00:00Z", status: "Pending" },
+      ],
+    },
+    {
+      id: "7",
+      userId: "107",
+      name: "Atorvastatin",
+      dosage: "20mg",
+      type: "Cholesterol Medication",
+      instructions: "Take at night",
+      stock: 18,
+      intakeSchedule: [
+        { id: "g1", intakeTime: "2025-03-20T22:00:00Z", status: "Pending" },
+      ],
+    },
+    {
+      id: "8",
+      userId: "108",
+      name: "Aspirin",
+      dosage: "81mg",
+      type: "Pain Reliever",
+      instructions: "Take once daily",
+      stock: 50,
+      intakeSchedule: [
+        { id: "h1", intakeTime: "2025-03-20T12:00:00Z", status: "Pending" },
+      ],
+    },
+    {
+      id: "9",
+      userId: "109",
+      name: "Prednisone",
+      dosage: "5mg",
+      type: "Steroid",
+      instructions: "Take in the morning",
+      stock: 12,
+      intakeSchedule: [
+        { id: "i1", intakeTime: "2025-03-20T08:00:00Z", status: "Pending" },
+        { id: "i2", intakeTime: "2025-03-20T20:00:00Z", status: "Pending" },
+      ],
+    },
+    {
+      id: "10",
+      userId: "110",
+      name: "Levothyroxine",
+      dosage: "50mcg",
+      type: "Thyroid Medication",
+      instructions: "Take on an empty stomach",
+      stock: 35,
+      intakeSchedule: [
+        { id: "j1", intakeTime: "2025-03-20T06:00:00Z", status: "Pending" },
+      ],
+    },
+  ];
+  
+  module.exports = mockMedicationEntries;
+  

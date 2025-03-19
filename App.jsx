@@ -8,6 +8,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './screens/LoginScreen';
 import CreateAccountScreen from './screens/CreateAccountScreen';
+import HomeScreen from './screens/HomeScreen';
 
 
 
@@ -18,14 +19,15 @@ export default function App() {
     <>
     <SafeAreaView style={styles.safeArea}>
     <StatusBar style='dark'/>
-    <NavigationContainer>
+    {/* <NavigationContainer>
       <Stack.Navigator screenOptions={{headerShown: false}}>
         <Stack.Screen name="Welcome" component={WelcomeScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="CreateAccount" component={CreateAccountScreen} />
       </Stack.Navigator>
       
-    </NavigationContainer>
+    </NavigationContainer> */}
+    <HomeScreen/>
     </SafeAreaView>
     </>
   );
