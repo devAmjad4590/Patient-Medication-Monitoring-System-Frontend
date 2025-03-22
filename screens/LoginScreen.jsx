@@ -21,7 +21,7 @@ function LoginScreen() {
   }
 
   function loginHandler() {
-
+    navigation.navigate('Drawer')
   }
 
   function signUpHandler() {

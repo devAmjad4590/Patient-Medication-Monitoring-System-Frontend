@@ -6,28 +6,57 @@ import { StyleSheet, Text, View, SafeAreaView } from 'react-native';
 import WelcomeScreen from './screens/WelcomeScreen';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import LoginScreen from './screens/LoginScreen';
 import CreateAccountScreen from './screens/CreateAccountScreen';
 import HomeScreen from './screens/HomeScreen';
-
-
+import AppointmentScreen from './screens/AppointmentScreen';
+import AnalyticsScreen from './screens/AnalyticsScreen';
+import MedicationScreen from './screens/MedicationScreen';
+import ModifySchedule from './screens/ModifySchedule';
 
 const Stack = createNativeStackNavigator();
+const Drawer = createDrawerNavigator();
+const BottomTab = createBottomTabNavigator();
+
+function DrawerNavigator(){
+  return <Drawer.Navigator>
+    <Drawer.Screen name="BottomTab" component={BottomNavigator} options={{
+      title: '',
+      drawerItemStyle:{
+        display: 'none'
+      }
+    }}/>
+    <Drawer.Screen name="ModifySchedule" component={ModifySchedule}></Drawer.Screen>
+  </Drawer.Navigator>
+}
+
+function BottomNavigator(){
+  return <BottomTab.Navigator screenOptions={{headerShown: false}}>
+    <BottomTab.Screen name="Home" component={HomeScreen}/>
+    <BottomTab.Screen name="Appointments" component={AppointmentScreen}/>
+    <BottomTab.Screen name="Analytics" component={AnalyticsScreen}/>
+    <BottomTab.Screen name="Medication" component={MedicationScreen}/>
+  </BottomTab.Navigator>
+}
+
 
 export default function App() {
   return (
     <>
     <SafeAreaView style={styles.safeArea}>
     <StatusBar style='dark'/>
-    {/* <NavigationContainer>
+    <NavigationContainer>
       <Stack.Navigator screenOptions={{headerShown: false}}>
         <Stack.Screen name="Welcome" component={WelcomeScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="CreateAccount" component={CreateAccountScreen} />
+        <Stack.Screen name="Drawer" component={DrawerNavigator}></Stack.Screen>
       </Stack.Navigator>
       
-    </NavigationContainer> */}
-    <HomeScreen/>
+    </NavigationContainer>
+    {/* <HomeScreen/> */}
     </SafeAreaView>
     </>
   );
