@@ -6,13 +6,11 @@ import { groupMedicationsByTime, getSortedSections } from "../utils/medicationUt
 import CalendarStrip from 'react-native-calendar-strip';
 import moment from 'moment';
 
-
 function HomeScreen() {
   const medicationEntries = mockMedicationEntries;
   const groupedMedications = groupMedicationsByTime(medicationEntries);
   const sections = getSortedSections(groupedMedications);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
-
 
   return (
     <>
@@ -29,7 +27,6 @@ function HomeScreen() {
       />
 
       <View style={styles.root}>
-
         <SectionList
           sections={sections}
           keyExtractor={(item) => item.id}
@@ -50,7 +47,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 23,
   },
   calendarContainer: {
-    // flex: 1,
     height: 200,
     flex: 4
   },
