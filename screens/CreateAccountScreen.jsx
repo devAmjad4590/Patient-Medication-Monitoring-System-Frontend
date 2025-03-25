@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { View, Text, StyleSheet, Image, Pressable } from 'react-native'
+import { View, Text, StyleSheet, Pressable } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import InputField from '../components/InputField'
 import PrimaryButton from '../components/PrimaryButton';
