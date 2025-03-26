@@ -9,6 +9,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './screens/LoginScreen';
 import CreateAccountScreen from './screens/CreateAccountScreen';
 import NotificationDrawer from './components/navigators/NotificationDrawer';
+import MedicationScreen from './screens/MedicationScreen';
+import MedicationDetailScreen from './screens/MedicationDetailScreen';
 const Stack = createNativeStackNavigator();
 
 
@@ -23,6 +25,8 @@ export default function App() {
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="CreateAccount" component={CreateAccountScreen} />
             <Stack.Screen name="Drawer" component={NotificationDrawer} />
+            <Stack.Screen name="Medication" component={MedicationScreen} />
+            <Stack.Screen name="MedicationDetail" component={MedicationDetailScreen} options={{headerShown: true}}/>
           </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaView>
