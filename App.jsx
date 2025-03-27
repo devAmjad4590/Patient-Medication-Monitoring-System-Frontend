@@ -26,7 +26,7 @@ export default function App() {
             <Stack.Screen name="CreateAccount" component={CreateAccountScreen} />
             <Stack.Screen name="Drawer" component={NotificationDrawer} />
             <Stack.Screen name="Medication" component={MedicationScreen} />
-            <Stack.Screen name="MedicationDetail" component={MedicationDetailScreen} options={{headerShown: true}}/>
+            <Stack.Screen name="MedicationDetail" component={MedicationDetailScreen} options={{headerShown: true, title:"Medication Detail"}}/>
           </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaView>
