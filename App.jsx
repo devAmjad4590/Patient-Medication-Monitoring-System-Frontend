@@ -11,6 +11,7 @@ import CreateAccountScreen from './screens/CreateAccountScreen';
 import NotificationDrawer from './components/navigators/NotificationDrawer';
 import MedicationScreen from './screens/MedicationScreen';
 import MedicationDetailScreen from './screens/MedicationDetailScreen';
+import RestockScreen from './screens/RestockScreen';
 const Stack = createNativeStackNavigator();
 
 
@@ -27,6 +28,7 @@ export default function App() {
             <Stack.Screen name="Drawer" component={NotificationDrawer} />
             <Stack.Screen name="Medication" component={MedicationScreen} />
             <Stack.Screen name="MedicationDetail" component={MedicationDetailScreen} options={{headerShown: true, title:"Medication Detail"}}/>
+            <Stack.Screen name="Restock" component={RestockScreen} options={{headerShown: true, title:"Medication Title"}}/>
           </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaView>
