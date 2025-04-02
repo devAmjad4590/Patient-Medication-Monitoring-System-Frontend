@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import ModifySchedule from '../../screens/ModifySchedule';
 import BottomNavigator from '../navigators/BottomNavigator';
 import { Pressable } from 'react-native';
+import PrimaryDrawerContent from './PrimaryDrawerContent';
 
 const Drawer = createDrawerNavigator();
 
@@ -11,6 +12,7 @@ const Drawer = createDrawerNavigator();
 function PrimaryDrawer({navigation}) {
     return (
         <Drawer.Navigator
+         drawerContent={( props ) => <PrimaryDrawerContent {...props} />}
           screenOptions={{
             headerStyle: { backgroundColor: '#2F7EF5' },
             headerRight: () => (
@@ -36,6 +38,7 @@ function PrimaryDrawer({navigation}) {
             options={({ navigation }) => ({
               headerShown: true,
               headerTitle: '',
+              title: 'Modify Schedule',
               headerLeft: () => (
                 <Ionicons
                   name="arrow-back"

@@ -10,7 +10,7 @@ function MedicationDetail({route, navigation}) {
     const id = route.params.id
     const selectedMedication = mockMedicationEntries.find(med => med.id === id)
     function handleRestock(){
-      navigation.navigate('Restock', {id: id})
+      navigation.navigate('Restock', {id: id, name: selectedMedication.name})
     }
   return (
     <View style={styles.container}>
