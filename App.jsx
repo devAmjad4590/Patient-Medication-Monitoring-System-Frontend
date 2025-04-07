@@ -5,19 +5,21 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet,SafeAreaView } from 'react-native';
 import WelcomeScreen from './screens/WelcomeScreen';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createStackNavigator } from '@react-navigation/stack';
 import LoginScreen from './screens/LoginScreen';
 import CreateAccountScreen from './screens/CreateAccountScreen';
 import NotificationDrawer from './components/navigators/NotificationDrawer';
 import MedicationScreen from './screens/MedicationScreen';
 import MedicationDetailScreen from './screens/MedicationDetailScreen';
 import RestockScreen from './screens/RestockScreen';
-const Stack = createNativeStackNavigator();
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+const Stack = createStackNavigator();
 
 
 export default function App() {
   return (
     <>
+    <GestureHandlerRootView style={{flex: 1}}>
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style="dark" />
         <NavigationContainer>
@@ -32,6 +34,7 @@ export default function App() {
           </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaView>
+      </GestureHandlerRootView>
     </>
   );
 }

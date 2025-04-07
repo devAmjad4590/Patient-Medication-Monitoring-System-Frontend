@@ -4,14 +4,19 @@ import mockMedicationEntries from '../data/medicationMockData'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import PrimaryButton from '../components/PrimaryButton'
 import InfoContainer from '../components/InfoContainer'
+import { useNavigation } from '@react-navigation/native'
 
 
-function MedicationDetail({route, navigation}) {
+function MedicationDetail({route}) {
     const id = route.params.id
     const selectedMedication = mockMedicationEntries.find(med => med.id === id)
+    const navigation = useNavigation()
+
     function handleRestock(){
-      navigation.navigate('Restock', {id: id, name: selectedMedication.name})
+      console.log("Restock medicine")
+      navigation.navigate('Restock', {id: selectedMedication.id})
     }
+
   return (
     <View style={styles.container}>
         <View style={styles.upperContainer}>
