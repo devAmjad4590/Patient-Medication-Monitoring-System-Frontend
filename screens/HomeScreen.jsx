@@ -34,6 +34,7 @@ function HomeScreen() {
         <SectionList
           sections={sections}
           keyExtractor={(item) => item.id}
+          style={{paddingHorizontal: 23}}
           renderSectionHeader={({ section: { title } }) => <Text style={styles.header}>{title}</Text>}
           renderItem={({ item }) => (
             <MedicationEntryCard medicationName={item.name} medicationType={item.type} />
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: "#E7E7E7",
-    paddingHorizontal: 23,
+    paddingHorizontal: 0,
   },
   calendarContainer: {
     height: 200,

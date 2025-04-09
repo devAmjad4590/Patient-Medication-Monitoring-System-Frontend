@@ -12,14 +12,12 @@ import NotificationDrawer from './components/navigators/NotificationDrawer';
 import MedicationScreen from './screens/MedicationScreen';
 import MedicationDetailScreen from './screens/MedicationDetailScreen';
 import RestockScreen from './screens/RestockScreen';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 const Stack = createStackNavigator();
 
 
 export default function App() {
   return (
     <>
-    <GestureHandlerRootView style={{flex: 1}}>
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style="dark" />
         <NavigationContainer>
@@ -34,7 +32,6 @@ export default function App() {
           </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaView>
-      </GestureHandlerRootView>
     </>
   );
 }
