@@ -26,6 +26,7 @@ function MedicationDetail({route}) {
         <InfoContainer title={"Medication Name"} value={selectedMedication.name} />
         <InfoContainer title={"Dosage"} value={selectedMedication.dosage} />
         <InfoContainer title={"Type"} value={selectedMedication.type} />
+        <InfoContainer title={"Frequency"} value={selectedMedication.frequency + ' Times a day'} />
         <InfoContainer title={"Stock"} value={selectedMedication.stock} />
         <InfoContainer title={"Instructions"} value={selectedMedication.instructions} />
         <View style={styles.buttonContainer}>
@@ -58,7 +59,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 40,
+    marginTop: 10,
   }
 })
 
