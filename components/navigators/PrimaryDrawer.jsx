@@ -3,7 +3,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
 import ModifySchedule from '../../screens/ModifySchedule';
 import BottomNavigator from '../navigators/BottomNavigator';
-import { Pressable } from 'react-native';
+import { Pressable, SafeAreaView } from 'react-native';
 import PrimaryDrawerContent from './PrimaryDrawerContent';
 import VoiceSettingsScreen from '../../screens/VoiceSettingsScreen';
 import { MaterialIcons } from '@expo/vector-icons'
@@ -15,7 +15,11 @@ const Drawer = createDrawerNavigator();
 function PrimaryDrawer({ navigation }) {
   return (
     <Drawer.Navigator
-      drawerContent={(props) => <PrimaryDrawerContent {...props} />}
+      drawerContent={(props) => 
+        <SafeAreaView style={{ flex: 1 }}>
+      <PrimaryDrawerContent {...props} />
+      </SafeAreaView>
+    }
       screenOptions={{
         headerStyle: { backgroundColor: '#2F7EF5' },
         headerRight: () => (

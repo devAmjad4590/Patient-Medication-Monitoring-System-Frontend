@@ -2,14 +2,14 @@ import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 
-function NotificationCard() {
+function NotificationCard({title, message}) {
     return (
         <View style={styles.container}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 10, justifyContent: 'center' }}>
                 <FontAwesome5 name="calendar-check" size={25} color="black" />
-                <Text style={styles.title}>Notification Title</Text>
+                <Text style={styles.title}>{title}</Text>
             </View>
-            <Text style={styles.message}>You have an appointment right now</Text>
+            <Text style={styles.message}>{message}</Text>
         </View>
     )
 }
@@ -28,12 +28,12 @@ const styles = StyleSheet.create({
         paddingHorizontal: 7
     },
     title: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
         marginBottom: 5,
     },
     message: {
-        fontSize: 16,
+        fontSize: 14,
         color: '#555',
         textAlign: 'left'
     },

@@ -1,14 +1,16 @@
 import React from 'react'
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import PrimaryDrawer from '../navigators/PrimaryDrawer';
-import { View, Text} from 'react-native';
+import { View, Text, ScrollView, SafeAreaView} from 'react-native';
 import NotificationCard from './NotificationCard';
 import { Button } from 'react-native-ui-lib';
+import mockNotifications from '../../data/mockNotification';
 
 const RightDrawer = createDrawerNavigator();
 
 
 function NotificationDrawer() {
+  const notifications = mockNotifications
   function handleClearAll(){
     console.log("Clear all notifications")
   }
@@ -25,12 +27,15 @@ function NotificationDrawer() {
             },
           }}
           drawerContent={() => (
-            <View style={{ flex: 1, padding: 20, paddingTop: 30 }}>
+            <SafeAreaView style={{ flex: 1 }}>
+            <View style={{ flex: 1, paddingTop: 30 }}>
               <View style={{flex: 1}}>
               <Text style={{ fontSize: 22, fontWeight: 'semi-bold', textAlign: 'center', marginBottom: 20 }}>Notifications</Text>
-              <NotificationCard></NotificationCard>
-              <NotificationCard></NotificationCard>
-              <NotificationCard></NotificationCard>
+              <ScrollView style={{paddingHorizontal: 20 }} showsVerticalScrollIndicator={false}>
+                {notifications.map((notification, index) => (
+                  <NotificationCard key={index} title={notification.title} message={notification.message} />
+                ))}
+              </ScrollView>
               </View>
               <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
                 <View style={{width: 200, borderRadius: 30, overflow: 'hidden'}}>
@@ -38,6 +43,7 @@ function NotificationDrawer() {
                 </View>
               </View>
             </View>
+            </SafeAreaView>
           )}
         >
           <RightDrawer.Screen name="MainApp" component={PrimaryDrawer} />
