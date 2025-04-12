@@ -10,26 +10,22 @@ export const formatTime = (isoString) => {
   });
 };
 
-// Function to group medications by intake time
-export const groupMedicationsByTime = (medications) => {
-  const groupedMedications = {};
+// 🔁 NEW: Group flat logs by formatted time (log.intakeTime)
+export const groupLogsByTime = (logs) => {
+  const grouped = {};
 
-  medications.forEach((med) => {
-    med.intakeSchedule.forEach((schedule) => {
-      const formattedTime = formatTime(schedule.intakeTime);
-      if (!groupedMedications[formattedTime]) {
-        groupedMedications[formattedTime] = [];
-      }
-      groupedMedications[formattedTime].push(med);
-    });
+  logs.forEach((log) => {
+    const timeLabel = formatTime(log.intakeTime);
+    if (!grouped[timeLabel]) grouped[timeLabel] = [];
+    grouped[timeLabel].push(log);
   });
 
-  return groupedMedications;
+  return grouped;
 };
 
-// ✅ Updated function to sort times correctly
-export const getSortedSections = (groupedMedications) => {
-  return Object.keys(groupedMedications)
+// ✅ Sort grouped logs by actual time value
+export const getSortedSections = (grouped) => {
+  return Object.keys(grouped)
     .sort((a, b) => {
       const timeA = moment(a, 'hh:mm A');
       const timeB = moment(b, 'hh:mm A');
@@ -37,6 +33,6 @@ export const getSortedSections = (groupedMedications) => {
     })
     .map((time) => ({
       title: time,
-      data: groupedMedications[time],
+      data: grouped[time],
     }));
 };

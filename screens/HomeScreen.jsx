@@ -1,43 +1,65 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, SectionList } from "react-native";
+import CalendarStrip from "react-native-calendar-strip";
+import moment from "moment";
+import { StatusBar } from "expo-status-bar";
 import MedicationEntryCard from "../components/MedicationEntryCard";
-import mockMedicationEntries from "../data/medicationMockData";
-import { groupMedicationsByTime, getSortedSections } from "../utils/medicationUtils";
-import CalendarStrip from 'react-native-calendar-strip';
-import moment from 'moment';
-import { StatusBar } from 'expo-status-bar';
-
+import mockMedicationIntakeLogs from "../data/mockMedicationIntakeLogs";
+import { groupLogsByTime, getSortedSections } from "../utils/medicationUtils";
 
 function HomeScreen() {
-  const medicationEntries = mockMedicationEntries;
-  const groupedMedications = groupMedicationsByTime(medicationEntries);
-  const sections = getSortedSections(groupedMedications);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
+  const [selectedDate, setSelectedDate] = useState(moment().format("YYYY-MM-DD"));
+
+  // 🔍 Filter logs by selected date
+  const filteredLogs = mockMedicationIntakeLogs.filter(
+    (log) => moment(log.intakeTime).format("YYYY-MM-DD") === selectedDate
+  );
+
+  const grouped = groupLogsByTime(filteredLogs);
+  const sections = getSortedSections(grouped);
 
   return (
     <>
       <StatusBar style="dark" />
 
       <CalendarStrip
-        style={{ height: 80, paddingTop: 0, backgroundColor: '#D9D9D9' }}
-        calendarHeaderStyle={{ display: "none" }} // Hide the month header
-        dateNumberStyle={{ fontSize: 14, color: "black" }}  // Normal date numbers
-        dateNameStyle={{ fontSize: 12, color: "black" }}  // Normal date names
-        highlightDateNumberStyle={{ fontSize: 16, color: "white", backgroundColor: '#2F7EF5', padding: 4, borderRadius: 30, width: 30 }}  // Selected date number
-        highlightDateNameStyle={{ fontSize: 14, color: "#2F7EF5" }}  // Selected date name
-        highlightDateContainerStyle={{ backgroundColor: "#4A90E2", borderRadius: 8, padding: 5 }} // Background for selected date
+        style={{ height: 80, backgroundColor: "#D9D9D9" }}
+        calendarHeaderStyle={{ display: "none" }}
+        dateNumberStyle={{ fontSize: 14, color: "black" }}
+        dateNameStyle={{ fontSize: 12, color: "black" }}
+        highlightDateNumberStyle={{
+          fontSize: 16,
+          color: "white",
+          backgroundColor: "#2F7EF5",
+          padding: 4,
+          borderRadius: 30,
+          width: 30,
+        }}
+        highlightDateNameStyle={{ fontSize: 14, color: "#2F7EF5" }}
+        highlightDateContainerStyle={{
+          backgroundColor: "#4A90E2",
+          borderRadius: 8,
+          padding: 5,
+        }}
         selectedDate={moment(selectedDate)}
-        onDateSelected={(date) => setSelectedDate(date.format('YYYY-MM-DD'))}
+        onDateSelected={(date) => setSelectedDate(date.format("YYYY-MM-DD"))}
       />
 
       <View style={styles.root}>
         <SectionList
           sections={sections}
           keyExtractor={(item) => item.id}
-          style={{paddingHorizontal: 23}}
-          renderSectionHeader={({ section: { title } }) => <Text style={styles.header}>{title}</Text>}
+          style={{ paddingHorizontal: 23 }}
+          renderSectionHeader={({ section: { title } }) => (
+            <Text style={styles.header}>{title}</Text>
+          )}
           renderItem={({ item }) => (
-            <MedicationEntryCard medicationName={item.name} medicationType={item.type} />
+            <MedicationEntryCard
+              medicationName={item.medication.name}
+              medicationType={item.medication.type}
+              status={item.status}
+              intakeTime={item.intakeTime}
+            />
           )}
         />
       </View>
@@ -49,11 +71,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: "#E7E7E7",
-    paddingHorizontal: 0,
-  },
-  calendarContainer: {
-    height: 200,
-    flex: 4
   },
   header: {
     fontSize: 20,
