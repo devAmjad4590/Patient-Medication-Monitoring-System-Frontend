@@ -18,6 +18,11 @@ function HomeScreen() {
   const grouped = groupLogsByTime(filteredLogs);
   const sections = getSortedSections(grouped);
 
+  function onCheck(medicationIntakeId){
+    // Handle check action here
+    console.log(`Checked: ${medicationIntakeId}`);
+  }
+
   return (
     <>
       <StatusBar style="dark" />
@@ -57,8 +62,10 @@ function HomeScreen() {
             <MedicationEntryCard
               medicationName={item.medication.name}
               medicationType={item.medication.type}
-              status={item.status}
-              intakeTime={item.intakeTime}
+              onCheck={() => {
+                // Handle check action here
+                onCheck(item.id);
+              }}
             />
           )}
         />

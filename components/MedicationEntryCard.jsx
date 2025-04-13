@@ -3,11 +3,12 @@ import { View, Text, StyleSheet, Pressable } from 'react-native'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { Checkbox } from 'react-native-ui-lib'
 
-function MedicationEntryCard({medicationName, medicationType}) {
+function MedicationEntryCard({medicationName, medicationType, onCheck}) {
     const [checked, setChecked] = React.useState(false)
 
     const handlePress = () => {
         setChecked(!checked)
+        onCheck(checked)
     }
 
     return (
