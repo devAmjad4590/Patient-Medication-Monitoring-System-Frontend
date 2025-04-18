@@ -40,7 +40,7 @@ function HomeScreen() {
           borderRadius: 30,
           width: 30,
         }}
-        highlightDateNameStyle={{ fontSize: 14, color: "#2F7EF5" }}
+        highlightDateNameStyle={{ fontSize: 13, color: "#2F7EF5" }}
         highlightDateContainerStyle={{
           backgroundColor: "#4A90E2",
           borderRadius: 8,

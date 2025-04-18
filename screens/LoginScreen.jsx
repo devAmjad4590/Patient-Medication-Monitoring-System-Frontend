@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
-import { View, Text, StyleSheet, Image, Pressable } from 'react-native'
+import { View, Text, StyleSheet, Image, Pressable, Alert } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import SecondaryButton from '../components/SecondaryButton'
 import InputField from '../components/InputField'
 import { useNavigation } from '@react-navigation/native'
-
+import { getURL, login } from '../api/authAPI'
 
 function LoginScreen() {
   const [email, setEmail] = useState('')
@@ -19,13 +19,30 @@ function LoginScreen() {
     setPassword(text)
   }
 
-  function loginHandler() {
-    navigation.navigate('Drawer')
+  async function loginHandler() {
+    if(!email || !password) {
+      Alert.alert('Invalid Input', 'Please enter a valid email and password.', [
+        { text: 'OK', style: 'default' }
+      ])
+      return
+    }
+    try{
+      const response = await login(email, password)
+      if(response.status === 201) {
+        console.log('Login successful:', response.data);
+        navigation.navigate('Drawer')
+      }
+    }
+    catch (error) {
+      Alert.alert('Invalid Input', 'Please enter a valid email and password.', [
+        { text: 'OK', style: 'default' }
+      ])
+    }
   }
 
   function signUpHandler() {
     navigation.navigate('CreateAccount')
-    console.log('yo')
+    
   }
 
 

@@ -4,7 +4,7 @@ import { View, Text, StyleSheet } from 'react-native'
 function AnalyticsScreen() {
   return (
     <View>
-      <Text>Analytics Screen</Text>
+      <Text>ANA 3AMK</Text>
     </View>
   )
 }

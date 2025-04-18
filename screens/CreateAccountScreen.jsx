@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
-import { View, Text, StyleSheet, Pressable } from 'react-native'
+import { View, Text, StyleSheet, Pressable, Alert } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import InputField from '../components/InputField'
 import PrimaryButton from '../components/PrimaryButton';
 import { useNavigation } from '@react-navigation/native'
+import { signUp } from '../api/authAPI';
 
 
 function CreateAccountScreen() {
@@ -21,9 +22,34 @@ function CreateAccountScreen() {
     setPassword(text)
   }
 
-  function createAccountHandler() {
+  async function createAccountHandler() {
     // add your code here
-    navigation.navigate('Login')
+    if(!email || !password || !fullName || !phoneNumber) {
+      Alert.alert('Invalid Input', 'Please fill up all the fields.', [
+        { text: 'OK', style: 'default' }
+      ])
+      return
+    }
+    const user = {
+      name: fullName,
+      email: email,
+      password: password,
+      fullName: fullName,
+      phoneNumber: phoneNumber
+    }
+
+    try{
+      const res = await signUp(user);
+      if(res.status === 201) {
+        console.log('Account created successfully:', res.data);
+        navigation.navigate('Login')
+      }
+    }
+    catch(err){
+      Alert.alert('Invalid Credentials', err.response.data.message, [
+        { text: 'OK', style: 'default' }
+      ])
+    }
   }
 
   function loginHandler() {
