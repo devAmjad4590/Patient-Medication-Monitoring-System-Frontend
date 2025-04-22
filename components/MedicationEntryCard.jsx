@@ -1,15 +1,25 @@
-import React from 'react'
+import React, {useEffect} from 'react'
 import { View, Text, StyleSheet, Pressable } from 'react-native'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { Checkbox } from 'react-native-ui-lib'
 
-function MedicationEntryCard({medicationName, medicationType, onCheck}) {
+function MedicationEntryCard({id, medicationName, medicationType, onCheck, isChecked}) {
     const [checked, setChecked] = React.useState(false)
 
+    useEffect(() => {
+        setChecked(isChecked)
+    }, [isChecked])
+
     const handlePress = () => {
-        setChecked(!checked)
-        onCheck(checked)
+        setChecked((prev) => {
+            const newChecked = !prev
+            onCheck(id, newChecked ? "Taken": "Pending")
+            return newChecked
+        })
+        
     }
+
+    
 
     return (
         <Pressable onPress={handlePress} style={styles.outerContainer}>
