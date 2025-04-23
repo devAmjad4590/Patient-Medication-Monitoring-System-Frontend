@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, SectionList } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import { View, Text, StyleSheet, SectionList, RefreshControl, Alert } from "react-native";
 import CalendarStrip from "react-native-calendar-strip";
 import moment from "moment";
 import { StatusBar } from "expo-status-bar";
@@ -7,18 +7,42 @@ import MedicationEntryCard from "../components/MedicationEntryCard";
 import { groupLogsByTime, getSortedSections } from "../utils/medicationUtils";
 import { getMedicationLogs, markMedicationTaken } from "../api/patientAPI";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import { useFocusEffect } from "@react-navigation/native";
 
 function HomeScreen() {
   const [selectedDate, setSelectedDate] = useState(moment().format("YYYY-MM-DD"));
   const [medicationIntakeLogs, setMedicationIntakeLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const cacheKey = "@medicationIntakeLogs";
 
+  // Initial Fetch of Logs (only once when the component mounts)
+  // made a new function cuz useEffect cannot be async
   useEffect(() => {
-    const loadLogs = async () => {
-      setLoading(true);
+    // define your async loader
+    async function init() {
+      try {
+        await loadLogs(true);  // Force fetch from API and skip cache
+      } catch (err) {
+        console.error("Error loading logs:", err);
+      }
+    }
+  
+    // invoke it
+    init();
+  }, []);  // run once on mount
 
+
+
+  // Function to load medication logs
+  // 1) Check if cached logs exist in AsyncStorage
+  // 2) If yes, load from there and set loading to false
+  // 3) If no, fetch from API and cache the logs
+  // 4) Set loading to false after fetching or caching
+  const loadLogs = async (skipCache = false) => {
+    setLoading(true);
+
+    if (!skipCache) {
       // Load cached logs from AsyncStorage if available
       const cachedLogs = await loadCachedWeekLogs()
       if (cachedLogs.length > 0) {
@@ -26,22 +50,35 @@ function HomeScreen() {
         setLoading(false);
         return;
       }
-
-      // If no cached logs, fetch from API
-      try {
-        const res = await getMedicationLogs();
-        setMedicationIntakeLogs(res);
-        await cacheMedicationLogs();
-      }
-      catch (err) {
-        console.error("Error fetching medication logs:", err);
-        throw err;
-      }
-      finally {
-        setLoading(false);
-      }
     }
-    loadLogs();
+
+    // If no cached logs, fetch from API
+    try {
+      const res = await getMedicationLogs();
+      setMedicationIntakeLogs(res);
+      await cacheMedicationLogs();
+    }
+    catch (err) {
+      console.error("Error fetching medication logs:", err);
+      throw err;
+    }
+    finally {
+      setLoading(false);
+    }
+  }
+
+  // Use useFocusEffect to refresh logs when the screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      loadLogs(false);
+    }, [])
+  )
+
+  // Refresh function to be called when the user pulls down to refresh
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadLogs(true) // Force fetch from API and skip cache
+    setRefreshing(false);
   }, [])
 
 
@@ -64,6 +101,8 @@ function HomeScreen() {
   const grouped = groupLogsByTime(dailyLogs);
   const sections = getSortedSections(grouped);
 
+
+  // Function to handle check/uncheck of medication logs
   async function onCheck(logId, status) {
     
     const takenAt = new Date().toISOString();
@@ -84,7 +123,7 @@ function HomeScreen() {
 
     // 3) PATCH server
     try {
-      await markMedicationTaken({ medicationId: logId, status: status, takenAt: takenAt});
+      await markMedicationTaken({ medicationId: logId, status: status, takenAt: takenAt });
     } catch (err) {
       console.error("Error syncing check to server:", err);
       // optionally: revert local change or re-queue for later
@@ -125,6 +164,13 @@ function HomeScreen() {
           sections={sections}
           keyExtractor={(item) => item._id}
           style={{ paddingHorizontal: 23 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#2F7EF5"
+            />
+          }
           renderSectionHeader={({ section: { title } }) => (
             <Text style={styles.header}>{title}</Text>
           )}
@@ -134,7 +180,7 @@ function HomeScreen() {
               medicationName={item.medication.name}
               medicationType={item.medication.type}
               onCheck={onCheck}
-              isChecked={item.status === "Taken"}
+              status={item.status}
             />
           )}
         />

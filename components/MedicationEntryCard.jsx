@@ -1,66 +1,113 @@
-import React, {useEffect} from 'react'
-import { View, Text, StyleSheet, Pressable } from 'react-native'
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
-import { Checkbox } from 'react-native-ui-lib'
+import React from "react";
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  Alert
+} from "react-native";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import Entypo from "@expo/vector-icons/Entypo";
+import { Checkbox } from "react-native-ui-lib";
 
-function MedicationEntryCard({id, medicationName, medicationType, onCheck, isChecked}) {
-    const [checked, setChecked] = React.useState(false)
+export default function MedicationEntryCard({
+  id,
+  medicationName,
+  medicationType,
+  status,    // "Pending" | "Taken" | "Missed"
+  onCheck,   // (id: string, newStatus: string) => void
+}) {
+  const isTaken  = status === "Taken";
+  const isMissed = status === "Missed";
 
-    useEffect(() => {
-        setChecked(isChecked)
-    }, [isChecked])
-
-    const handlePress = () => {
-        setChecked((prev) => {
-            const newChecked = !prev
-            onCheck(id, newChecked ? "Taken": "Pending")
-            return newChecked
-        })
-        
+  // Define your cycle of states
+  const getNextStatus = (cur) => {
+    switch (cur) {
+      case "Taken":   return "Pending";
+      case "Pending": return "Taken";
+      case "Missed":  return "Taken";
+      default:        return "Pending";
     }
+  };
 
-    
+  const handlePress = () => {
+    const next = getNextStatus(status);
 
-    return (
-        <Pressable onPress={handlePress} style={styles.outerContainer}>
-            <MaterialCommunityIcons name="pill" size={35} color="black" />
-            <View style={styles.textContainer}>
-                <Text style={styles.medicationName}>{medicationName}</Text>
-                <Text style={styles.caption}>{medicationType}</Text>
-            </View>
-            <Checkbox size={28} borderRadius={20} value={checked} onValueChange={setChecked} />
-        </Pressable>
-    )
+    // Confirm Taken→Pending
+    if (status === "Taken" && next === "Pending") {
+      Alert.alert(
+        "Confirm Medication Status",
+        `Are you sure you want to mark "${medicationName}" as missed?`,
+        [
+            { text: "Yes",   onPress: () => onCheck(id, next) },
+            { text: "Cancel", style: "cancel" }
+        ]
+      );
+
+    // Confirm Missed→Taken
+    } else if (status === "Missed" && next === "Taken") {
+      Alert.alert(
+        "Confirm Medication Status",
+        `Are you sure you took "${medicationName}"?`,
+        [
+            { text: "Yes",   onPress: () => onCheck(id, next) },
+          { text: "Cancel", style: "cancel" }
+        ]
+      );
+
+    // All other transitions (e.g. Pending→Taken) happen immediately
+    } else {
+      onCheck(id, next);
+    }
+  };
+
+  return (
+    <Pressable onPress={handlePress} style={styles.outerContainer}>
+      <MaterialCommunityIcons name="pill" size={35} color="black" />
+      <View style={styles.textContainer}>
+        <Text style={styles.medicationName}>{medicationName}</Text>
+        <Text style={styles.caption}>{medicationType}</Text>
+      </View>
+      {isMissed ? (
+        <Entypo name="circle-with-cross" size={24} color="red" />
+      ) : (
+        <Checkbox
+          size={28}
+          borderRadius={20}
+          value={isTaken}
+          onValueChange={handlePress}
+        />
+      )}
+    </Pressable>
+  );
 }
 
 const styles = StyleSheet.create({
-    outerContainer: {
-        backgroundColor: 'white',
-        borderRadius: 18,
-        padding: 20,
-        marginBottom: 15,
-        elevation: 3,
-        flexDirection: 'row',
-        alignItems: 'center',
-        height: 80,
-        justifyContent: 'space-between', // Pushes items apart
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-    },
-    textContainer: {
-        flex: 1, // Takes up remaining space to push checkbox to the right
-        marginLeft: 15,
-    },
-    medicationName: {
-        fontSize: 17,
-        fontWeight: '600',
-    },
-    caption: {
-        fontSize: 13,
-        color: '#7F7F7F',
-    },
-})
-
-export default MedicationEntryCard
+  outerContainer: {
+    backgroundColor: "white",
+    borderRadius: 18,
+    padding: 20,
+    marginBottom: 15,
+    elevation: 3,
+    flexDirection: "row",
+    alignItems: "center",
+    height: 80,
+    justifyContent: "space-between",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  textContainer: {
+    flex: 1,
+    marginLeft: 15,
+  },
+  medicationName: {
+    fontSize: 17,
+    fontWeight: "600",
+  },
+  caption: {
+    fontSize: 13,
+    color: "#7F7F7F",
+  },
+});
