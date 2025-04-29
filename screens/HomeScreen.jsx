@@ -70,7 +70,7 @@ function HomeScreen() {
   // Use useFocusEffect to refresh logs when the screen is focused
   useFocusEffect(
     useCallback(() => {
-      loadLogs(false);
+      loadLogs();
     }, [])
   )
 

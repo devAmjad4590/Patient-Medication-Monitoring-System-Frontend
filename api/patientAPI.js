@@ -40,3 +40,26 @@ export const markMedicationTaken = async (logIntake) => {
         throw err;
     }
 };
+
+export const getMedicationDetails = async (medicationId) => {
+    try{
+        const response = await api.get(`${patientURL}/medications/${medicationId}`);
+        return response.data.medication;
+    }
+    catch(err){
+        console.error("Error fetching medication details:", err);
+        throw err;
+    }
+}
+
+export const restockMedication = async (medicationId, quantity) => {
+    try {
+        const response = await api.patch(`${patientURL}/restock-medication/${medicationId}`, {
+            quantity: quantity,
+        });
+        return response.data;
+    } catch (err) {
+        console.error("Error restocking medication:", err);
+        throw err;
+    }
+}

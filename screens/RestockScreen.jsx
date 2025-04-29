@@ -1,27 +1,67 @@
-import React, { useLayoutEffect, useState } from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
-import mockMedicationEntries from '../data/medicationMockData';
+import React, { useLayoutEffect, useEffect, useState } from 'react';
+import { View, Text, TextInput, StyleSheet, ActivityIndicator } from 'react-native';
 import PrimaryButton from '../components/PrimaryButton';
+import { getMedicationDetails, restockMedication } from '../api/patientAPI';
 
-function RestockScreen({ route, navigation }) {
+export default function RestockScreen({ route, navigation }) {
   const { id } = route.params;
-  const selectedMedication = mockMedicationEntries.find(med => med.id === id);
-  const name = selectedMedication.name;
-
+  const [selectedMedication, setSelectedMedication] = useState(null);
   const [quantity, setQuantity] = useState('');
 
-  useLayoutEffect(() => {
-    navigation.setOptions({ title: name });
-  }, [navigation, name]);
+  // 1️⃣ Fetch medication details once on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await getMedicationDetails(id);
+        setSelectedMedication(res);
+      } catch (err) {
+        console.error('Error fetching medication details:', err);
+      }
+    })();
+  }, [id]);
 
+  // 2️⃣ As soon as we have a name, update the nav bar title
+  useLayoutEffect(() => {
+    navigation.setOptions({ title: "Loading" });
+    if (selectedMedication?.name) {
+      navigation.setOptions({ title: selectedMedication.name });
+    }
+  }, [navigation, selectedMedication]);
+
+  // 3️⃣ Loader until we have the data
+  if (!selectedMedication) {
+    return (
+      <View style={[styles.root, { justifyContent: 'center' }]}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  // 4️⃣ Keep quantity numeric only
   function handleInputChange(value) {
-    const numeric = value.replace(/[^0-9]/g, '');
-    setQuantity(numeric);
+    setQuantity(value.replace(/[^0-9]/g, ''));
+  }
+
+  // 5️⃣ Stub for when the user taps “Complete Restock”
+  function handleSubmit() {
+    if(quantity === '') {
+      alert("Please enter a quantity to restock.");
+      return;
+    }
+    try{
+      const res = restockMedication(id, quantity)
+      console.log(res);
+      // navigate back to medication detail screen
+    navigation.goBack()
+    }
+    catch(err){
+      console.error("Error restocking medication:", err);
+    }
+    console.log('Restock', id, quantity);
   }
 
   return (
     <View style={styles.root}>
-      {/* Main Content */}
       <View style={styles.content}>
         <View style={styles.row}>
           <Text style={styles.textStyle}>Add amount:</Text>
@@ -36,9 +76,8 @@ function RestockScreen({ route, navigation }) {
         </View>
       </View>
 
-      {/* Button at bottom */}
       <View style={styles.button}>
-      <PrimaryButton >Complete Restock</PrimaryButton>
+        <PrimaryButton onPress={handleSubmit}>Complete Restock</PrimaryButton>
       </View>
     </View>
   );
@@ -82,5 +121,3 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
-
-export default RestockScreen;
