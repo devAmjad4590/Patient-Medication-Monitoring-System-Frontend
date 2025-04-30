@@ -63,3 +63,25 @@ export const restockMedication = async (medicationId, quantity) => {
         throw err;
     }
 }
+
+export const getUpcomingAppointments = async () => {
+    try {
+        const response = await api.get(`${patientURL}/appointments/upcoming`);
+        return response.data.appointments;
+    } catch (err) {
+        console.error("Error fetching upcoming appointments:", err);
+        throw err;
+    }
+}
+
+export const getPastAppointments = async () => {
+    try {
+        const response = await api.get(`${patientURL}/appointments/past`);
+        return response.data.appointments;
+    } catch (err) {
+        console.error("Error fetching past appointments:", err);
+        throw err;
+    }
+}
+
+

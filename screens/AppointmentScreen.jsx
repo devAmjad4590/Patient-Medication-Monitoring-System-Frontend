@@ -1,13 +1,35 @@
-import React from 'react'
-import { View, StyleSheet, FlatList } from 'react-native'
+import React, {useEffect, useState} from 'react'
+import { View, StyleSheet, FlatList, RefreshControl}from 'react-native'
 import AppointmentCard from '../components/AppointmentCard'
-import { pastAppointments, upcomingAppointments } from '../data/mockAppointment.js'
+import {getPastAppointments, getUpcomingAppointments} from '../api/patientAPI'
 import SegmentedControl from 'react-native-ui-lib/segmentedControl';
 
 
 function AppointmentScreen() {
   const [selectedIndex, setSelectedIndex] = React.useState(0);
-  const appointments = selectedIndex === 0 ? upcomingAppointments : pastAppointments;
+  const [upcomingAppointments, setUpcomingAppointments] = React.useState([]);
+  const [pastAppointments, setPastAppointments] = React.useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+  
+  
+  useEffect(() => {
+    const init = async () => {
+      await fetchAppointments();
+    }
+    init();
+  }, []); // run once on mount
+
+  async function fetchAppointments(){
+    try{
+      const upcoming = await getUpcomingAppointments();
+      const past = await getPastAppointments();
+      setUpcomingAppointments(upcoming);
+      setPastAppointments(past);
+    }
+    catch(err){
+      console.error('Error fetching appointments:', err);
+    }
+  }
 
   return (
     <View style={styles.root}>
@@ -34,7 +56,17 @@ function AppointmentScreen() {
       />
 
       <FlatList
-        data={appointments}
+        data={upcomingAppointments && selectedIndex === 0 ? upcomingAppointments : pastAppointments}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={async () => {
+              setRefreshing(true);
+              await fetchAppointments();
+              setRefreshing(false);
+            }}
+          />
+        }
         keyExtractor={(_, index) => index.toString()}
         renderItem={({ item }) => (
           <AppointmentCard
