@@ -12,6 +12,7 @@ import NotificationDrawer from './components/navigators/NotificationDrawer';
 import MedicationScreen from './screens/MedicationScreen';
 import MedicationDetailScreen from './screens/MedicationDetailScreen';
 import RestockScreen from './screens/RestockScreen';
+import ReminderScreen from './screens/ReminderScreen';
 const Stack = createStackNavigator();
 
 
@@ -20,7 +21,7 @@ export default function App() {
     <>
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style="dark" />
-        <NavigationContainer>
+        {/* <NavigationContainer>
           <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Welcome" component={WelcomeScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
@@ -30,7 +31,8 @@ export default function App() {
             <Stack.Screen name="MedicationDetail" component={MedicationDetailScreen} options={{headerShown: true, title:"Medication Detail"}}/>
             <Stack.Screen name="Restock" component={RestockScreen} options={{headerShown: true, title:"Medication Title"}}/>
           </Stack.Navigator>
-        </NavigationContainer>
+        </NavigationContainer> */}
+        <ReminderScreen></ReminderScreen>
       </SafeAreaView>
     </>
   );
