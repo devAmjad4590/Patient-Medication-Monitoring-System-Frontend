@@ -12,22 +12,30 @@ function ReminderScreen() {
     const [dueMedications, setDueMedications] = useState([])
 
     const checkMedications = async () => {
-
+        console.log('Checking for due medications...')
     }
 
     useEffect(() => {
-        let isRunning = false;
+        let isMounted = true
+        let timeoutId;
 
-        const interval = setInterval(async () => {
-            if(isRunning){
-                return; // Skip if already running
+        const startCheck = async () => {
+            if(!isMounted) return
+
+            await checkMedications()
+
+            if(isMounted){
+                timeoutId = setTimeout(startCheck, 30000) // Check every minute
             }
-            if(!isRunning){
-                isRunning = true;
-                await checkMedications();
-                isRunning = false;
-            }
-        })
+        };
+
+        startCheck();
+
+        // cleanup function runs when the user navigates away from the screen
+        return () => {
+            isMounted = false
+            clearTimeout(timeoutId) // Clear the timeout if the component unmounts
+        }
     }, []);
     return (
         <LinearGradient
