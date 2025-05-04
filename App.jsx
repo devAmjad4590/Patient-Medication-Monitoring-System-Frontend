@@ -1,113 +1,89 @@
-// UI Library dependencies
 import 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import { StatusBar } from 'expo-status-bar';
+import React, { useEffect, useRef } from 'react';
 import { StyleSheet, SafeAreaView } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { useEffect, useRef } from 'react';
+import * as Notifications from 'expo-notifications';
+
+// Import your existing screens
+import WelcomeScreen from './screens/WelcomeScreen';
+import LoginScreen from './screens/LoginScreen';
+import CreateAccountScreen from './screens/CreateAccountScreen';
+import NotificationDrawer from './components/navigators/NotificationDrawer';
+import MedicationScreen from './screens/MedicationScreen';
+import MedicationDetailScreen from './screens/MedicationDetailScreen';
+import RestockScreen from './screens/RestockScreen';
 import ReminderScreen from './screens/ReminderScreen';
-const Stack = createStackNavigator();
-import PushNotification from 'react-native-push-notification';
+
+// Import notification service
 import reminderService from './utils/MedicationReminderService';
-import { getMedicationLogs } from './api/patientAPI';
+
+// Set up notifications configuration
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
+
+const Stack = createStackNavigator();
 
 export default function App() {
-  // Create a ref to the navigation object
-  const navigationRef = useRef(null);
+  const notificationListener = useRef();
+  const responseListener = useRef();
 
-  // This function allows us to navigate even when the app is in background
-  const navigate = (name, params) => {
-    if (navigationRef.current) {
-      navigationRef.current.navigate(name, params);
-    }
-  };
-
-  // Function to schedule medication reminders based on database data
-  const scheduleMedicationReminders = async () => {
-    try{
-      const medicationLogs = await getMedicationLogs();
-      const timeGroups = {};
-
-      medicationLogs.forEach(med => {
-        if(med.status === "Pending"){
-          const intakeTime = new Date(med.intakeTime);
-
-          if(intakeTime < new Date()) return;
-
-          const timeKey = intakeTime.toISOString()
-          
-          if(!timeGroups[timeKey]){
-            timeGroups[timeKey] = [];
-          }
-
-          timeGroups[timeKey].push(med._id || med.id)
-        }
-      })
-
-      // Schedule reminders for each timegroup
-      Object.entries(timeGroups).forEach(([timeStr, medicationIds]) => {
-        const reminderTime = new Date(timeStr);
-        reminderService.scheduleMedicationsReminder(medicationIds, reminderTime)
-      })
-
-      console.log(`Scheduled reminders for ${Object.keys(timeGroups).length} time slots)`);
-    }
-    catch(err){
-      console.error("Error scheduling medication reminders:", err);
-    }
-  }
-
-  // This is only when the user clicks on the notification
   useEffect(() => {
-    PushNotification.configure({
-      onNotification: function(notification) {
-        console.log("NOTIFICATION:", notification)
+    // Initialize notification listeners
+    notificationListener.current = Notifications.addNotificationReceivedListener(
+      notification => {
+        console.log('Notification received:', notification);
+      }
+    );
 
-        // check if the notification is a medication reminder
-        if(notification.data && notification.data.type === 'MEDICATION_REMINDER'){
-          navigate('ReminderScreen', {
-            timeSlotId: notification.data.timeSlotId,
-            medicationIds: notification.data.medicationIds,
-          })
-        }
-      },
-      permissions: {
-        alert: true,
-        badge: true,
-        sound: true,
-      },
-      popInitialNotification: true,
-      requestPermissions: Platform.OS === 'ios',
-    })
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(
+      response => {
+        console.log('Notification response received:', response);
+        // Handle user interaction with the notification here
+      }
+    );
 
-    scheduleMedicationReminders(); // Schedule reminders when the app starts
-
-    // set up periodic reminder scheduling (incase new medications are added)
-    const schedulingInterval = setInterval(() => {
-      scheduleMedicationReminders();
-    }, 60 * 60 * 1000); // every hour
+    // Clean up listeners on unmount
     return () => {
-      clearInterval(schedulingInterval); // Clear the interval when the component unmounts
-    }
-  }, [])
+      Notifications.removeNotificationSubscription(notificationListener.current);
+      Notifications.removeNotificationSubscription(responseListener.current);
+    };
+  }, []);
+
   return (
-    <>
-      <SafeAreaView style={styles.safeArea}>
-        <StatusBar style="dark" />
-        <NavigationContainer>
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="Welcome" component={WelcomeScreen} />
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="CreateAccount" component={CreateAccountScreen} />
-            <Stack.Screen name="Drawer" component={NotificationDrawer} />
-            <Stack.Screen name="Medication" component={MedicationScreen} />
-            <Stack.Screen name="MedicationDetail" component={MedicationDetailScreen} options={{ headerShown: true, title: "Medication Detail" }} />
-            <Stack.Screen name="Restock" component={RestockScreen} options={{ headerShown: true, title: "Medication Title" }} />
-            <Stack.Screen name="Reminder" component={ReminderScreen} options={{ headerShown: true, title: "Medication Reminder", presentation: 'fullScreenModal', gestureEnabled: false }} />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </SafeAreaView>
-    </>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar style="dark" />
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Welcome" component={WelcomeScreen} />
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="CreateAccount" component={CreateAccountScreen} />
+          <Stack.Screen name="Drawer" component={NotificationDrawer} />
+          <Stack.Screen name="Medication" component={MedicationScreen} />
+          <Stack.Screen 
+            name="MedicationDetail" 
+            component={MedicationDetailScreen} 
+            options={{headerShown: true, title:"Medication Detail"}}
+          />
+          <Stack.Screen 
+            name="Restock" 
+            component={RestockScreen} 
+            options={{headerShown: true, title:"Medication Title"}}
+          />
+          <Stack.Screen 
+            name="Reminder" 
+            component={ReminderScreen} 
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </SafeAreaView>
   );
 }
 

@@ -8,6 +8,7 @@ import { groupLogsByTime, getSortedSections } from "../utils/medicationUtils";
 import { getMedicationLogs, markMedicationTaken } from "../api/patientAPI";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
+import reminderService from "../utils/MedicationReminderService";
 
 function HomeScreen() {
   const [selectedDate, setSelectedDate] = useState(moment().format("YYYY-MM-DD"));
@@ -41,6 +42,11 @@ function HomeScreen() {
   // 4) Set loading to false after fetching or caching
   const loadLogs = async (skipCache = false) => {
     setLoading(true);
+    // schedule notifications
+    medicationIntakeLogs.forEach(async log => {
+      const intakeTime = new Date(log.intakeTime);
+      // await reminderService.scheduleMedicationsReminder(log._id, intakeTime);
+    })
 
     if (!skipCache) {
       // Load cached logs from AsyncStorage if available
