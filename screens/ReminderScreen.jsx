@@ -5,14 +5,66 @@ import PrimaryButton from '../components/PrimaryButton'
 import DestructiveButton from '../components/DestructiveButton'
 import mockMedicationIntakeLogs from '../data/mockMedicationIntakeLogs'
 import { LinearGradient } from 'expo-linear-gradient'
+import moment from 'moment'
+import { getMedicationLogs } from '../api/patientAPI'
 
 
-function ReminderScreen() {
+function ReminderScreen({route, navigation}) {
     const [reminderVisible, setReminderVisible] = useState(true)
     const [dueMedications, setDueMedications] = useState([])
+    const [currentTime, setCurrentTime] = useState(moment().format('h:mm A'))
+    const [loading, setLoading] = useState(true)
 
-    const checkMedications = async () => {
-        console.log('Checking for due medications...')
+    // get medication IDs from route params
+    const timeSlotId = route.params?.timeSlotId
+    const medicationIds = route.params?.medicationIds || []
+
+    const checkCurrentMedications =  (allLogs) => {
+        const now = new Date();
+        const dueNow = allLogs.filter(log => {
+            const intakeTime = new Date(log.intakeTime);
+            const timeDiff = Math.abs(intakeTime - now);
+            const minutesDiff = Math.floor(timeDiff / (1000 * 60)); // Convert to minutes
+
+            return log.status === "Pending" && minutesDiff <=30; 
+
+        })
+
+        if(dueNow.length >0){
+            setDueMedications(dueNow)
+        } 
+        else{
+            setReminderVisible(false)
+        }
+
+        setLoading(false)
+    }
+
+    const fetchMedications = async () => {
+        try{
+            setLoading(true);
+
+            const allLogs = await getMedicationLogs();
+
+            if(medicationIds.length > 0){
+                const medicationsToShow = allLogs.filter(log =>
+                    medicationIds.includes(log._id || log.id) 
+                )
+
+                if(medicationsToShow.length > 0) {
+                    setDueMedications(medicationsToShow)
+                    setLoading(false)
+                    return;
+                }
+            }
+
+            // Fallback to check for medications due now
+            checkCurrentMedications();
+        }
+        catch(err){
+            console.error("Error fetching medications:", err)
+            setLoading(false)
+        }
     }
 
     useEffect(() => {
@@ -54,7 +106,7 @@ function ReminderScreen() {
                     <Text style={styles.time}>2:30 PM</Text>
                     <View style={styles.medicationContainer}>
                         <FlatList
-                            data={mockMedicationIntakeLogs}
+                            data={dueMedications}
                             renderItem={({ item }) => (
                                 <MedicationEntryCard
                                     medicationName={item.medication.name}
@@ -63,7 +115,7 @@ function ReminderScreen() {
                                     status={item.status}
                                 />
                             )}
-                            keyExtractor={(item) => item.id}
+                            keyExtractor={(item) => item.id || item._id}
                             showsVerticalScrollIndicator={false}
                         />
                     </View>

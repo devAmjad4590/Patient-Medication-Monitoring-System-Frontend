@@ -1,12 +1,21 @@
 import PushNotification from 'react-native-push-notification';
 import { Platform } from 'react-native';
 
-class MedicatoinReminderService{
+class MedicationReminderService{
     constructor(){
         this.configure();
     }
-
+    
     configure = () => {
+        // Configure global notification settings
+        PushNotification.configure({
+            onNotification: function(notification){
+                console.log("NOTIFICATION:", notification);
+                // Process the notification here if needed
+            },
+            popInitialNotification: true,
+            requestPermissions: Platform.OS === 'ios',
+        })
         PushNotification.createChannel(
             {
                 channelId: "medication-alarms",
@@ -20,21 +29,12 @@ class MedicatoinReminderService{
             (created) => console.log(`createChannel returned '${created}'`)
         );
 
-        // Configure global notification settings
-        PushNotification.configure({
-            onNotification: function(notification){
-                console.log("NOTIFICATION:", notification);
-                // Process the notification here if needed
-            },
-            popInitialNotification: true,
-            requestPermissions: Platform.OS === 'ios',
-        })
     }
 
-    scheduleMedicationsReminder = (medications, reminderTime) => {
+    scheduleMedicationsReminder = (medicationIds, reminderTime) => {
         const timeSlotId = new Date(reminderTime).getTime();
 
-        const medicationNames = medications.map(med => med.name).join(", ");
+        const medicationNames = medicationIds.map(med => med.name).join(", ");
         const message = `Time to take your medications: ${medicationNames}`;
 
         //Schedule the notification
@@ -42,7 +42,40 @@ class MedicatoinReminderService{
             channelId: "medication-alarms",
             id: timeSlotId,
             title: "MEDICATION REMINDER",   
-            // continue from claude here
-        })
+            message: message,
+            date: new Date(reminderTime), // Schedule for the specified time
+            allowWhileIdle: true, // (optional) set notification to work while on doze, default: false
+            importance: 'high',
+            priority: 'max',
+            visibility: 'public',
+            ongoing: true,
+            playSound: true,
+            soundName: "alarm.mp3",
+            vibrate: true,
+            vibration: 1000,
+            fullScreenIntent: true,
+            invokeApp: true,
+            userInfo: {
+                timeSlotId: timeSlotId,
+                medicationIds: medicationIds,
+                type: 'MEDICATION_REMINDER',
+            }
+        });
+
+        console.log(`Scheduled group reminder for ${medicationIds.length} medications at ${new Date(reminderTime).toLocaleTimeString()}`);
+    }
+
+    cancelReminder = (timeSlotId) => {
+        PushNotification.cancelLocalNotifications({ id: timeSlotId });
+        console.log(`Cancelled reminder with ID: ${timeSlotId}`);
+    }
+
+    cancelAllReminders = () => {
+        PushNotification.cancelAllLocalNotifications();
+        console.log("Cancelled all reminders");
     }
 }
+
+// Create a singleton instance
+const reminderService = new MedicationReminderService();
+export default reminderService;
