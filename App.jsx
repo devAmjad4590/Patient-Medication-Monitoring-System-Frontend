@@ -16,9 +16,8 @@ import MedicationScreen from './screens/MedicationScreen';
 import MedicationDetailScreen from './screens/MedicationDetailScreen';
 import RestockScreen from './screens/RestockScreen';
 import ReminderScreen from './screens/ReminderScreen';
-
-// Import notification service
-import reminderService from './utils/MedicationReminderService';
+import { createNavigationContainerRef } from '@react-navigation/native';
+const navigationRef = createNavigationContainerRef();
 
 // Set up notifications configuration
 Notifications.setNotificationHandler({
@@ -38,8 +37,18 @@ export default function App() {
   useEffect(() => {
     // Initialize notification listeners
     notificationListener.current = Notifications.addNotificationReceivedListener(
-      notification => {
-        console.log('Notification received:', notification);
+      response => {
+        //const {redirectTo, params} = response.request.content.data;
+        // navigationRef.navgate('Reminder')
+        // if(redirectTo === 'Reminder'){
+        // }
+        const {medicationGroup, medications, time} = response.request.content.data;
+        if(medicationGroup){
+          navigationRef.navigate('Reminder', {
+            medicationIds: medications,
+            time: time,
+          })
+        }
       }
     );
 
@@ -60,7 +69,7 @@ export default function App() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
-      <NavigationContainer>
+      <NavigationContainer ref={navigationRef}>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Welcome" component={WelcomeScreen} />
           <Stack.Screen name="Login" component={LoginScreen} />

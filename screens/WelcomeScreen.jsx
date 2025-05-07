@@ -7,6 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native'
 
 
+
 function WelcomeScreen() {
     const navigation = useNavigation()
     function createAccountHandler(){

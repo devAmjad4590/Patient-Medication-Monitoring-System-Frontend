@@ -28,7 +28,7 @@ function HomeScreen() {
         console.error("Error loading logs:", err);
       }
     }
-  
+
     // invoke it
     init();
   }, []);  // run once on mount
@@ -43,10 +43,6 @@ function HomeScreen() {
   const loadLogs = async (skipCache = false) => {
     setLoading(true);
     // schedule notifications
-    medicationIntakeLogs.forEach(async log => {
-      const intakeTime = new Date(log.intakeTime);
-      // await reminderService.scheduleMedicationsReminder(log._id, intakeTime);
-    })
 
     if (!skipCache) {
       // Load cached logs from AsyncStorage if available
@@ -62,6 +58,7 @@ function HomeScreen() {
     try {
       const res = await getMedicationLogs();
       setMedicationIntakeLogs(res);
+      await reminderService.scheduleMedicationsReminder(res);
       await cacheMedicationLogs();
     }
     catch (err) {
@@ -76,7 +73,9 @@ function HomeScreen() {
   // Use useFocusEffect to refresh logs when the screen is focused
   useFocusEffect(
     useCallback(() => {
-      loadLogs();
+      if (!loading) {
+        loadLogs();
+      }
     }, [])
   )
 
@@ -110,7 +109,7 @@ function HomeScreen() {
 
   // Function to handle check/uncheck of medication logs
   async function onCheck(logId, status) {
-    
+
     const takenAt = new Date().toISOString();
     // 1) Update in-memory
     const updated = medicationIntakeLogs.map((log) =>

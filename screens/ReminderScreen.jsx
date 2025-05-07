@@ -6,7 +6,8 @@ import DestructiveButton from '../components/DestructiveButton'
 import mockMedicationIntakeLogs from '../data/mockMedicationIntakeLogs'
 import { LinearGradient } from 'expo-linear-gradient'
 import moment from 'moment'
-import { getMedicationLogs } from '../api/patientAPI'
+import { getMedicationIntakeLogsById, getMedicationLogs } from '../api/patientAPI'
+
 
 
 function ReminderScreen({route, navigation}) {
@@ -16,50 +17,33 @@ function ReminderScreen({route, navigation}) {
     const [loading, setLoading] = useState(true)
 
     // get medication IDs from route params
-    const timeSlotId = route.params?.timeSlotId
+    const time = route.params?.time
     const medicationIds = route.params?.medicationIds || []
+    console.log("Medication IDs:", medicationIds)
 
-    const checkCurrentMedications =  (allLogs) => {
-        const now = new Date();
-        const dueNow = allLogs.filter(log => {
-            const intakeTime = new Date(log.intakeTime);
-            const timeDiff = Math.abs(intakeTime - now);
-            const minutesDiff = Math.floor(timeDiff / (1000 * 60)); // Convert to minutes
 
-            return log.status === "Pending" && minutesDiff <=30; 
-
-        })
-
-        if(dueNow.length >0){
-            setDueMedications(dueNow)
-        } 
-        else{
-            setReminderVisible(false)
-        }
-
-        setLoading(false)
-    }
-
-    const fetchMedications = async () => {
+    useEffect(() => {
         try{
-            setLoading(true);
-
-            const allLogs = await getMedicationLogs();
-
-            if(medicationIds.length > 0){
-                const medicationsToShow = allLogs.filter(log =>
-                    medicationIds.includes(log._id || log.id) 
-                )
-
-                if(medicationsToShow.length > 0) {
-                    setDueMedications(medicationsToShow)
-                    setLoading(false)
-                    return;
-                }
+            const init = async () => {
+                await fetchMedicationLogs()
+                setLoading(false)
             }
+            init()
+        }
+        catch(err){
+            console.error("Error in useEffect:", err)
+        }
+        finally{
+            setLoading(false)
+        }
+    }, [medicationIds])
 
-            // Fallback to check for medications due now
-            checkCurrentMedications();
+    const fetchMedicationLogs = async () => {
+        try{
+            setLoading(true)
+            const allLogs = await getMedicationIntakeLogsById(medicationIds)
+            setDueMedications(allLogs)
+            console.log("Fetched medication logs:", allLogs)
         }
         catch(err){
             console.error("Error fetching medications:", err)
@@ -67,28 +51,7 @@ function ReminderScreen({route, navigation}) {
         }
     }
 
-    useEffect(() => {
-        let isMounted = true
-        let timeoutId;
 
-        const startCheck = async () => {
-            if(!isMounted) return
-
-            await checkMedications()
-
-            if(isMounted){
-                timeoutId = setTimeout(startCheck, 30000) // Check every minute
-            }
-        };
-
-        startCheck();
-
-        // cleanup function runs when the user navigates away from the screen
-        return () => {
-            isMounted = false
-            clearTimeout(timeoutId) // Clear the timeout if the component unmounts
-        }
-    }, []);
     return (
         <LinearGradient
             colors={['#E6F7FF', '#D0EFFF']} // Soft blue gradient

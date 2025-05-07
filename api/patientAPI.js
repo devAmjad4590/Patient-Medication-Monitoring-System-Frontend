@@ -84,4 +84,17 @@ export const getPastAppointments = async () => {
     }
 }
 
+export const getMedicationIntakeLogsById = async (intakeIds) => {
+    try{
+        const response = await api.post(`${patientURL}/medication-logs`, {
+            intakeIds: intakeIds,
+        })
+        return response.data.medicationIntakeLogs;
+    }
+    catch(err){
+        console.error("Error fetching medication logs by ID:", err);
+        throw err;
+    }
+}
+
 
