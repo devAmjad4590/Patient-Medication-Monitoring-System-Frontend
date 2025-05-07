@@ -1,7 +1,0 @@
-{
-    "blacklist": [
-      "android\\.support\\.v4\\.app\\.INotificationSideChannel.*",
-      "android\\.support\\.v4\\.os\\.IResultReceiver.*",
-      "android\\.support\\.v4\\.os\\.ResultReceiver.*"
-    ]
-  }
