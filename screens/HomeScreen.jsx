@@ -9,6 +9,8 @@ import { getMedicationLogs, markMedicationTaken } from "../api/patientAPI";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import reminderService from "../utils/MedicationReminderService";
+import { registerPushToken } from "../api/notificationAPI";
+import * as Notifications from "expo-notifications";
 
 function HomeScreen() {
   const [selectedDate, setSelectedDate] = useState(moment().format("YYYY-MM-DD"));
@@ -33,6 +35,42 @@ function HomeScreen() {
     init();
   }, []);  // run once on mount
 
+  useEffect(() => {
+    async function configurePushNotifications() {
+
+      const { status } = await Notifications.getPermissionsAsync();
+      let finalStatus = status;
+
+      if (finalStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+
+      if (finalStatus !== 'granted') {
+        Alert.alert(
+          'Push Notification Permission',
+          'You need to enable push notifications to receive reminders.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+      const pushTokenData = await Notifications.getExpoPushTokenAsync();
+      
+        const res = await registerPushToken(pushTokenData.data);
+        console.log('Push token registered:', res);
+      
+
+      if(Platform.OS === 'android'){
+        Notifications.setNotificationChannelAsync('high', {
+          name: 'high',
+          importance: Notifications.AndroidImportance.HIGH,
+        })
+      }
+    }
+    configurePushNotifications();
+
+      // You can send this token to your server to send push notifications
+  }, []);
 
 
   // Function to load medication logs

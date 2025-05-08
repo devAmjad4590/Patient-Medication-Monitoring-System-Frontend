@@ -3,10 +3,10 @@ import { View, FlatList, Text, StyleSheet, ImageBackground } from 'react-native'
 import MedicationEntryCard from '../components/MedicationEntryCard'
 import PrimaryButton from '../components/PrimaryButton'
 import DestructiveButton from '../components/DestructiveButton'
-import mockMedicationIntakeLogs from '../data/mockMedicationIntakeLogs'
 import { LinearGradient } from 'expo-linear-gradient'
 import moment from 'moment'
 import { getMedicationIntakeLogsById, getMedicationLogs } from '../api/patientAPI'
+import reminderService from '../utils/MedicationReminderService'
 
 
 
@@ -21,11 +21,19 @@ function ReminderScreen({route, navigation}) {
     const medicationIds = route.params?.medicationIds || []
     console.log("Medication IDs:", medicationIds)
 
+    function snoozeHandler(){
+        navigation.goBack()
+        
+    }
 
+    function dismissHandler(){
+        console.log("Dismiss clicked")
+    }
     useEffect(() => {
         try{
             const init = async () => {
                 await fetchMedicationLogs()
+                setCurrentTime(moment(time).format('h:mm A'))
                 setLoading(false)
             }
             init()
@@ -52,6 +60,7 @@ function ReminderScreen({route, navigation}) {
     }
 
 
+
     return (
         <LinearGradient
             colors={['#E6F7FF', '#D0EFFF']} // Soft blue gradient
@@ -66,7 +75,7 @@ function ReminderScreen({route, navigation}) {
             >
                 <View style={styles.root}>
                     <Text style={[{}, styles.title]}>Medication{'\n'}Reminder</Text>
-                    <Text style={styles.time}>2:30 PM</Text>
+                    <Text style={styles.time}>{currentTime}</Text>
                     <View style={styles.medicationContainer}>
                         <FlatList
                             data={dueMedications}
@@ -83,8 +92,8 @@ function ReminderScreen({route, navigation}) {
                         />
                     </View>
                     <View style={styles.buttonContainer}>
-                        <PrimaryButton>Snooze</PrimaryButton>
-                        <DestructiveButton>Dismiss</DestructiveButton>
+                        <PrimaryButton onPress={snoozeHandler}>Snooze</PrimaryButton>
+                        <DestructiveButton onPress={dismissHandler}>Dismiss</DestructiveButton>
                     </View>
 
                 </View>

@@ -134,8 +134,8 @@ class MedicationReminderService {
       this.scheduledMedicationIds.add(notificationId);
     }
 
-    // Test notification (fires after 10 seconds)
-    const testTime = new Date(Date.now() + 10000);
+    // // Test notification (fires after 10 seconds)
+    // const testTime = new Date(Date.now() + 10000);
     // await Notifications.scheduleNotificationAsync({
     //   identifier: 'test-reminder',
     //   content: {
@@ -172,6 +172,21 @@ class MedicationReminderService {
       console.error("Error cancelling reminders:", error);
     }
   };
+
+  //work here
+  snoozeReminder = async (notificationId, snoozeTime) => {
+    try{
+      // snooze 5 minutes
+      const snoozeDate = new Date(Date.now() + snoozeTime * 60 * 1000);
+      // Cancel the existing notification
+      await Notifications.cancelScheduledNotificationAsync(notificationId);
+      // Schedule a new notification with the snooze time
+
+    }
+    catch (error) {
+      console.error("Error snoozing reminder:", error);
+    }
+  }
 
   // Methods to listen for notification interactions
   addNotificationReceivedListener = (callback) => {
