@@ -39,12 +39,9 @@ export default function App() {
     // Initialize notification listeners
     notificationListener.current = Notifications.addNotificationReceivedListener(
       response => {
-        //const {redirectTo, params} = response.request.content.data;
-        // navigationRef.navgate('Reminder')
-        // if(redirectTo === 'Reminder'){
-        // }
-        const { medicationGroup, medications, time, identifier } = response.request.content.data;
-        if (medicationGroup) {
+        console.log('Notification received:', response.request.content.data);
+        const { medications, time, identifier } = response.request.content.data;
+        if (medications) {
           navigationRef.navigate('Reminder', {
             medicationIds: medications,
             time: time,

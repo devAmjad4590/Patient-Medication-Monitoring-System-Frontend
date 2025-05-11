@@ -8,7 +8,6 @@ import { groupLogsByTime, getSortedSections } from "../utils/medicationUtils";
 import { getMedicationLogs, markMedicationTaken } from "../api/patientAPI";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
-import reminderService from "../utils/MedicationReminderService";
 import { registerPushToken } from "../api/notificationAPI";
 import * as Notifications from "expo-notifications";
 
@@ -96,7 +95,6 @@ function HomeScreen() {
     try {
       const res = await getMedicationLogs();
       setMedicationIntakeLogs(res);
-      await reminderService.scheduleMedicationsReminder(res);
       await cacheMedicationLogs();
     }
     catch (err) {

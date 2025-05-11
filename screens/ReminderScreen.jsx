@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from 'react'
-import { View, FlatList, Text, StyleSheet, ImageBackground } from 'react-native'
+import { View, FlatList, Text, StyleSheet, ImageBackground, Alert } from 'react-native'
 import MedicationEntryCard from '../components/MedicationEntryCard'
 import PrimaryButton from '../components/PrimaryButton'
 import DestructiveButton from '../components/DestructiveButton'
 import { LinearGradient } from 'expo-linear-gradient'
 import moment from 'moment'
-import { getMedicationIntakeLogsById, getMedicationLogs } from '../api/patientAPI'
-import reminderService from '../utils/MedicationReminderService'
-
-
+import { getMedicationIntakeLogsById, markMedicationTaken } from '../api/patientAPI'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 function ReminderScreen({route, navigation}) {
     const [reminderVisible, setReminderVisible] = useState(true)
     const [dueMedications, setDueMedications] = useState([])
     const [currentTime, setCurrentTime] = useState(moment().format('h:mm A'))
     const [loading, setLoading] = useState(true)
+    const cacheKey = "@medicationIntakeLogs" // Same cache key as HomeScreen
 
     // get medication IDs from route params
     const time = route.params?.time
@@ -23,12 +22,92 @@ function ReminderScreen({route, navigation}) {
 
     function snoozeHandler(){
         navigation.goBack()
-        
     }
 
-    function dismissHandler(){
-        console.log("Dismiss clicked")
+    async function dismissHandler(){
+        console.log("Dismiss clicked - marking all as missed")
+        
+        // Confirmation dialog
+        Alert.alert(
+            "Mark as Missed",
+            "Are you sure you want to mark all medications as missed?",
+            [
+                {
+                    text: "Cancel",
+                    style: "cancel"
+                },
+                {
+                    text: "Yes, Mark as Missed",
+                    onPress: async () => {
+                        // Mark all medications as missed
+                        const missedAt = new Date().toISOString();
+                        
+                        // Process each medication
+                        const updatePromises = dueMedications.map(async (medication) => {
+                            // Skip if already marked
+                            if (medication.status === "Missed") return;
+                            
+                            // Mark as missed in state
+                            console.log(`Marking medication ${medication._id} as Missed`);
+                            
+                            try {
+                                // Update on server
+                                await markMedicationTaken({
+                                    medicationId: medication._id,
+                                    status: "Missed",
+                                    takenAt: null,
+                                    missedAt: missedAt
+                                });
+                                console.log(`Successfully marked ${medication._id} as missed on server`);
+                            } catch (err) {
+                                console.error(`Error marking medication ${medication._id} as missed:`, err);
+                            }
+                        });
+                        
+                        try {
+                            // Wait for all updates to complete
+                            await Promise.all(updatePromises);
+                            
+                            // Update the medications in state
+                            const updatedMedications = dueMedications.map(med => ({
+                                ...med,
+                                status: "Missed",
+                                missedAt
+                            }));
+                            setDueMedications(updatedMedications);
+                            
+                            // Update global cache
+                            const cachedLogsJson = await AsyncStorage.getItem(cacheKey);
+                            if (cachedLogsJson) {
+                                let cachedLogs = JSON.parse(cachedLogsJson);
+                                
+                                // Update all relevant medications in the cache
+                                cachedLogs = cachedLogs.map(log => {
+                                    if (medicationIds.includes(log._id)) {
+                                        return { ...log, status: "Missed", missedAt };
+                                    }
+                                    return log;
+                                });
+                                
+                                await AsyncStorage.setItem(cacheKey, JSON.stringify(cachedLogs));
+                                console.log("Updated cache with missed status for all medications");
+                            }
+                            
+                            // Navigate back after successful update
+                            navigation.goBack();
+                        } catch (err) {
+                            console.error("Error updating medications as missed:", err);
+                            Alert.alert(
+                                "Error",
+                                "There was an error marking medications as missed. Please try again."
+                            );
+                        }
+                    }
+                }
+            ]
+        );
     }
+    
     useEffect(() => {
         try{
             const init = async () => {
@@ -59,7 +138,52 @@ function ReminderScreen({route, navigation}) {
         }
     }
 
+    // Function to handle check/uncheck of medication logs
+    async function onCheck(logId, status) {
+        console.log(`Marking medication ${logId} as ${status}`)
+        
+        const takenAt = new Date().toISOString();
+        
+        // 1) Update in-memory
+        const updated = dueMedications.map((log) =>
+            log._id === logId
+                ? { ...log, status: status, takenAt: takenAt }
+                : log
+        );
+        setDueMedications(updated);
 
+        // 2) Update global cache
+        try {
+            // First get existing logs from cache
+            const cachedLogsJson = await AsyncStorage.getItem(cacheKey);
+            let cachedLogs = cachedLogsJson ? JSON.parse(cachedLogsJson) : [];
+            
+            // Update the matching log in the cache
+            cachedLogs = cachedLogs.map(log => 
+                log._id === logId 
+                    ? { ...log, status: status, takenAt: takenAt }
+                    : log
+            );
+            
+            // Save updated logs back to cache
+            await AsyncStorage.setItem(cacheKey, JSON.stringify(cachedLogs));
+            console.log("Updated cache with new status");
+        } catch (err) {
+            console.error("Error updating medication cache:", err);
+        }
+
+        // 3) Update server
+        try {
+            await markMedicationTaken({ 
+                medicationId: logId, 
+                status: status, 
+                takenAt: takenAt 
+            });
+            console.log("Successfully updated medication status on server");
+        } catch (err) {
+            console.error("Error updating medication on server:", err);
+        }
+    };
 
     return (
         <LinearGradient
@@ -71,7 +195,6 @@ function ReminderScreen({route, navigation}) {
                 style={styles.backgroundImage}
                 resizeMode='cover'
                 imageStyle={{ opacity: 0.65 }}
-
             >
                 <View style={styles.root}>
                     <Text style={[{}, styles.title]}>Medication{'\n'}Reminder</Text>
@@ -81,13 +204,14 @@ function ReminderScreen({route, navigation}) {
                             data={dueMedications}
                             renderItem={({ item }) => (
                                 <MedicationEntryCard
+                                    id={item._id}
                                     medicationName={item.medication.name}
                                     medicationType={item.medication.type}
-                                    intakeTime={item.intakeTime}
                                     status={item.status}
+                                    onCheck={onCheck}
                                 />
                             )}
-                            keyExtractor={(item) => item.id || item._id}
+                            keyExtractor={(item) => item._id}
                             showsVerticalScrollIndicator={false}
                         />
                     </View>
@@ -95,7 +219,6 @@ function ReminderScreen({route, navigation}) {
                         <PrimaryButton onPress={snoozeHandler}>Snooze</PrimaryButton>
                         <DestructiveButton onPress={dismissHandler}>Dismiss</DestructiveButton>
                     </View>
-
                 </View>
             </ImageBackground>
         </LinearGradient>
