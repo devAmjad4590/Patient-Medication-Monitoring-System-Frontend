@@ -19,6 +19,7 @@ import ReminderScreen from './screens/ReminderScreen';
 import { createNavigationContainerRef } from '@react-navigation/native';
 const navigationRef = createNavigationContainerRef();
 import { registerPushToken } from './api/notificationAPI';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Set up notifications configuration
 Notifications.setNotificationHandler({
@@ -37,26 +38,37 @@ export default function App() {
 
   useEffect(() => {
     // Initialize notification listeners
+
+    const foregroundSubscription = Notifications.addNotificationReceivedListener(
+      async (notification) => {
+        await storeNotification(notification);
+        console.log('Notification received in foreground:', notification.request.content.data);
+      }
+    )
+
     notificationListener.current = Notifications.addNotificationReceivedListener(
-      response => {
-        console.log('Notification received:', response.request.content.data);
-        const { medications, time, identifier } = response.request.content.data;
+      async (response) => {
+        console.log('Notification received:', response.request.content);
+        storeNotification(response).then(() => {
+          console.log("Notification stored successfully");
+        }).catch(err => {
+          console.error("Error storing notification:", err);
+        })
+        const { medications, time } = response.request.content.data;
         if (medications) {
           navigationRef.navigate('Reminder', {
             medicationIds: medications,
             time: time,
-            identifier: identifier
           })
         }
       }
     );
 
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(
-      response => {
-        console.log('Notification response received:', response);
-        // Handle user interaction with the notification here
-      }
-    );
+    // responseListener.current = Notifications.addNotificationResponseReceivedListener(
+    //   response => {
+        
+    //   }
+    // );
 
     // Clean up listeners on unmount
     return () => {
@@ -65,7 +77,29 @@ export default function App() {
     };
   }, []);
 
-  
+  const storeNotification = async (notification) => {
+    console.log("Storing notification:", notification);
+    try{
+      const notificationData = {
+        id: notification.request.identifier,
+        title: notification.request.content.title,
+        body: notification.request.content.body,
+        receivedAt: new Date().toISOString(),
+      };
+
+      const existingData = await AsyncStorage.getItem('notificationsHistory');
+      const notificationsHistory = existingData ? JSON.parse(existingData) : [];
+      notificationsHistory.push(notificationData);
+
+      // Only keep last 50 notifications
+    const trimmedNotifications = notificationsHistory.slice(-50);
+
+    await AsyncStorage.setItem('notificationsHistory', JSON.stringify(trimmedNotifications));
+    }
+    catch(err){
+      console.error("Error storing notification:", err);
+    }
+  }
 
     return (
       <SafeAreaView style={styles.safeArea}>

@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react'
-import { View, FlatList, Text, StyleSheet, ImageBackground, Alert } from 'react-native'
+import React, { useState, useEffect, useCallback } from 'react'
+import { View, FlatList, Text, StyleSheet, ImageBackground, Alert, BackHandler } from 'react-native'
 import MedicationEntryCard from '../components/MedicationEntryCard'
 import PrimaryButton from '../components/PrimaryButton'
 import DestructiveButton from '../components/DestructiveButton'
 import { LinearGradient } from 'expo-linear-gradient'
 import moment from 'moment'
 import { getMedicationIntakeLogsById, markMedicationTaken } from '../api/patientAPI'
+import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-function ReminderScreen({route, navigation}) {
+function ReminderScreen({ route, navigation }) {
     const [reminderVisible, setReminderVisible] = useState(true)
     const [dueMedications, setDueMedications] = useState([])
     const [currentTime, setCurrentTime] = useState(moment().format('h:mm A'))
@@ -20,13 +21,21 @@ function ReminderScreen({route, navigation}) {
     const medicationIds = route.params?.medicationIds || []
     console.log("Medication IDs:", medicationIds)
 
-    function snoozeHandler(){
+    function snoozeHandler() {
         navigation.goBack()
     }
 
-    async function dismissHandler(){
+    useEffect(() => {
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => true)
+        return () => backHandler.remove()
+    }, [])
+
+
+
+
+    async function dismissHandler() {
         console.log("Dismiss clicked - marking all as missed")
-        
+
         // Confirmation dialog
         Alert.alert(
             "Mark as Missed",
@@ -41,15 +50,15 @@ function ReminderScreen({route, navigation}) {
                     onPress: async () => {
                         // Mark all medications as missed
                         const missedAt = new Date().toISOString();
-                        
+
                         // Process each medication
                         const updatePromises = dueMedications.map(async (medication) => {
                             // Skip if already marked
                             if (medication.status === "Missed") return;
-                            
+
                             // Mark as missed in state
                             console.log(`Marking medication ${medication._id} as Missed`);
-                            
+
                             try {
                                 // Update on server
                                 await markMedicationTaken({
@@ -63,11 +72,11 @@ function ReminderScreen({route, navigation}) {
                                 console.error(`Error marking medication ${medication._id} as missed:`, err);
                             }
                         });
-                        
+
                         try {
                             // Wait for all updates to complete
                             await Promise.all(updatePromises);
-                            
+
                             // Update the medications in state
                             const updatedMedications = dueMedications.map(med => ({
                                 ...med,
@@ -75,12 +84,12 @@ function ReminderScreen({route, navigation}) {
                                 missedAt
                             }));
                             setDueMedications(updatedMedications);
-                            
+
                             // Update global cache
                             const cachedLogsJson = await AsyncStorage.getItem(cacheKey);
                             if (cachedLogsJson) {
                                 let cachedLogs = JSON.parse(cachedLogsJson);
-                                
+
                                 // Update all relevant medications in the cache
                                 cachedLogs = cachedLogs.map(log => {
                                     if (medicationIds.includes(log._id)) {
@@ -88,13 +97,31 @@ function ReminderScreen({route, navigation}) {
                                     }
                                     return log;
                                 });
-                                
+
                                 await AsyncStorage.setItem(cacheKey, JSON.stringify(cachedLogs));
                                 console.log("Updated cache with missed status for all medications");
                             }
-                            
+
                             // Navigate back after successful update
-                            navigation.goBack();
+                            navigation.reset({
+                                index: 0,
+                                routes: [{
+                                    name: 'Drawer',
+                                    state: {
+                                        routes: [{
+                                            name: 'MainApp',
+                                            state: {
+                                                routes: [{
+                                                    name: 'BottomTab',
+                                                    state: {
+                                                        routes: [{ name: 'Home' }]
+                                                    }
+                                                }]
+                                            }
+                                        }]
+                                    }
+                                }]
+                            });
                         } catch (err) {
                             console.error("Error updating medications as missed:", err);
                             Alert.alert(
@@ -107,9 +134,9 @@ function ReminderScreen({route, navigation}) {
             ]
         );
     }
-    
+
     useEffect(() => {
-        try{
+        try {
             const init = async () => {
                 await fetchMedicationLogs()
                 setCurrentTime(moment(time).format('h:mm A'))
@@ -117,22 +144,22 @@ function ReminderScreen({route, navigation}) {
             }
             init()
         }
-        catch(err){
+        catch (err) {
             console.error("Error in useEffect:", err)
         }
-        finally{
+        finally {
             setLoading(false)
         }
     }, [medicationIds])
 
     const fetchMedicationLogs = async () => {
-        try{
+        try {
             setLoading(true)
             const allLogs = await getMedicationIntakeLogsById(medicationIds)
             setDueMedications(allLogs)
             console.log("Fetched medication logs:", allLogs)
         }
-        catch(err){
+        catch (err) {
             console.error("Error fetching medications:", err)
             setLoading(false)
         }
@@ -141,9 +168,9 @@ function ReminderScreen({route, navigation}) {
     // Function to handle check/uncheck of medication logs
     async function onCheck(logId, status) {
         console.log(`Marking medication ${logId} as ${status}`)
-        
+
         const takenAt = new Date().toISOString();
-        
+
         // 1) Update in-memory
         const updated = dueMedications.map((log) =>
             log._id === logId
@@ -157,14 +184,14 @@ function ReminderScreen({route, navigation}) {
             // First get existing logs from cache
             const cachedLogsJson = await AsyncStorage.getItem(cacheKey);
             let cachedLogs = cachedLogsJson ? JSON.parse(cachedLogsJson) : [];
-            
+
             // Update the matching log in the cache
-            cachedLogs = cachedLogs.map(log => 
-                log._id === logId 
+            cachedLogs = cachedLogs.map(log =>
+                log._id === logId
                     ? { ...log, status: status, takenAt: takenAt }
                     : log
             );
-            
+
             // Save updated logs back to cache
             await AsyncStorage.setItem(cacheKey, JSON.stringify(cachedLogs));
             console.log("Updated cache with new status");
@@ -174,15 +201,52 @@ function ReminderScreen({route, navigation}) {
 
         // 3) Update server
         try {
-            await markMedicationTaken({ 
-                medicationId: logId, 
-                status: status, 
-                takenAt: takenAt 
+            await markMedicationTaken({
+                medicationId: logId,
+                status: status,
+                takenAt: takenAt
             });
             console.log("Successfully updated medication status on server");
+            // check if all medications are marked as taken
+            const allTaken = updated.every(med => med.status === "Taken");
+            if (allTaken) {
+                // Show a success message before navigating
+                Alert.alert(
+                    "Success!",
+                    "All medications have been marked as taken.",
+                    [
+                        {
+                            text: "OK",
+                            onPress: () => {
+                                // Navigate to Home screen through nested navigators
+                                navigation.reset({
+                                    index: 0,
+                                    routes: [{
+                                        name: 'Drawer',
+                                        state: {
+                                            routes: [{
+                                                name: 'MainApp',
+                                                state: {
+                                                    routes: [{
+                                                        name: 'BottomTab',
+                                                        state: {
+                                                            routes: [{ name: 'Home' }]
+                                                        }
+                                                    }]
+                                                }
+                                            }]
+                                        }
+                                    }]
+                                });
+                            }
+                        }
+                    ]
+                );
+            }
         } catch (err) {
             console.error("Error updating medication on server:", err);
         }
+
     };
 
     return (

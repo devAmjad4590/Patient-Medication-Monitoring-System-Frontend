@@ -46,6 +46,30 @@ const mockNotifications = [
       type: 'reminder',
       date: '2025-04-11T07:15:00Z',
       read: false,
+    },
+    {
+      id: 'n6',
+      title: 'Refill Reminder',
+      message: 'Aspirin stock is getting low. You have 3 doses remaining.',
+      type: 'reminder',
+      date: '2025-04-11T07:15:00Z',
+      read: false,
+    },
+    {
+      id: 'n6',
+      title: 'Refill Reminder',
+      message: 'Aspirin stock is getting low. You have 3 doses remaining.',
+      type: 'reminder',
+      date: '2025-04-11T07:15:00Z',
+      read: false,
+    },
+    {
+      id: 'n6',
+      title: 'Refill Reminder',
+      message: 'Aspirin stock is getting low. You have 3 doses remaining.',
+      type: 'reminder',
+      date: '2025-04-11T07:15:00Z',
+      read: false,
     }
   ];
   
