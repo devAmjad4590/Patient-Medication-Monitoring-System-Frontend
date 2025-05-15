@@ -1,58 +1,61 @@
-import React from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import SelectDropdown from 'react-native-select-dropdown';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-
-
-function SelectOption() {
-    const displayOptions = [
-        { label: 'Today', value: 'today', icon: 'calendar-today' },
-        { label: 'This Week', value: 'week', icon: 'calendar-week' },
-        { label: 'This Month', value: 'month', icon: 'calendar-month' },
-        { label: 'All Time', value: 'all', icon: 'calendar' },
-        { label: 'Custom', value: 'custom', icon: 'calendar-edit' },
-      ];
+function SelectOption({ onSelect }) {
+  const displayOptions = [
+    { label: 'Today', value: 'today', icon: 'calendar-today' },
+    { label: 'This Week', value: 'week', icon: 'calendar-week' },
+    { label: 'This Month', value: 'month', icon: 'calendar-month' },
+    { label: 'All Time', value: 'all', icon: 'calendar' },
+    { label: 'Custom', value: 'custom', icon: 'calendar-edit' },
+  ];
+  
   return (
-      <View style={styles.optionContainer}>
-              <SelectDropdown
-                data={displayOptions}
-                defaultValue={displayOptions[0]}
-                onSelect={(selectedItem, index) => {
-                  console.log(selectedItem, index);
-                }}
-                renderButton={(selectedItem, isOpened) => {
-                  return (
-                    <View style={styles.dropdownButtonStyle}>
-                      {selectedItem && (
-                        <Icon name={selectedItem.icon} style={styles.dropdownButtonIconStyle} />
-                      )}
-                      <Text style={styles.dropdownButtonTxtStyle}>
-                        {(selectedItem && selectedItem.label) || 'Select period'}
-                      </Text>
-                      <Icon name={isOpened ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
-                    </View>
-                  );
-                }}
-                renderItem={(item, index, isSelected) => {
-                  return (
-                    <View style={{...styles.dropdownItemStyle, ...(isSelected && {backgroundColor: '#D2D9DF'})}}>
-                      <Icon name={item.icon} style={styles.dropdownItemIconStyle} />
-                      <Text style={styles.dropdownItemTxtStyle}>{item.label}</Text>
-                    </View>
-                  );
-                }}
-                showsVerticalScrollIndicator={false}
-                dropdownStyle={styles.dropdownMenuStyle}
-              />
+    <View style={styles.optionContainer}>
+      <SelectDropdown
+        data={displayOptions}
+        defaultValue={displayOptions[1]} // Default to "This Week"
+        onSelect={(selectedItem, index) => {
+          console.log(selectedItem, index);
+          // Call the parent's onSelect function if provided
+          if (onSelect) {
+            onSelect(selectedItem);
+          }
+        }}
+        renderButton={(selectedItem, isOpened) => {
+          return (
+            <View style={styles.dropdownButtonStyle}>
+              {selectedItem && (
+                <Icon name={selectedItem.icon} style={styles.dropdownButtonIconStyle} />
+              )}
+              <Text style={styles.dropdownButtonTxtStyle}>
+                {(selectedItem && selectedItem.label) || 'Select period'}
+              </Text>
+              <Icon name={isOpened ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
+            </View>
+          );
+        }}
+        renderItem={(item, index, isSelected) => {
+          return (
+            <View style={{...styles.dropdownItemStyle, ...(isSelected && {backgroundColor: '#D2D9DF'})}}>
+              <Icon name={item.icon} style={styles.dropdownItemIconStyle} />
+              <Text style={styles.dropdownItemTxtStyle}>{item.label}</Text>
+            </View>
+          );
+        }}
+        showsVerticalScrollIndicator={false}
+        dropdownStyle={styles.dropdownMenuStyle}
+      />
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
-optionContainer: {
+  optionContainer: {
     alignItems: 'center',
-    paddingTop: 20
+    paddingTop: 20,
   },
   dropdownButtonStyle: {
     width: 200,
@@ -64,7 +67,6 @@ optionContainer: {
     alignItems: 'center',
     paddingHorizontal: 12,
     elevation: 4,
-
   },
   dropdownButtonTxtStyle: {
     flex: 1,
@@ -104,6 +106,6 @@ optionContainer: {
     marginRight: 8,
     color: '#2465FD',
   },
-})
+});
 
-export default SelectOption
+export default SelectOption;
