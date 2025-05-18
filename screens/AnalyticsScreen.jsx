@@ -31,7 +31,7 @@ function AnalyticsScreen() {
     <View style={styles.root}>
       <SelectOption></SelectOption>
       <View style={{ flex: 1, alignItems: 'flex-end', marginTop: 20 }}>
-        <View style={{ width: '60%' }}>
+        <View style={{ width: '60%', height: '300' }}>
           <PrimaryButton><Text style={{ fontSize: 20, fontWeight: 400 }}>Generate Report  </Text><Icon size={20} name='content-save-edit'></Icon></PrimaryButton>
         </View>
       </View>
@@ -110,7 +110,7 @@ function AnalyticsScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    paddingTop: 20,
+    paddingTop: 0,
     backgroundColor: '#E7E7E7'
   },
   content: {
