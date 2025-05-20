@@ -107,7 +107,7 @@ export default function App() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style="dark" />
-        <NavigationContainer ref={navigationRef}>
+        {/* <NavigationContainer ref={navigationRef}>
           <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Welcome" component={WelcomeScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
@@ -129,8 +129,9 @@ export default function App() {
               component={ReminderScreen}
             />
           </Stack.Navigator>
-        </NavigationContainer>
-        {/* <AnalyticsScreen></AnalyticsScreen> */}
+        </NavigationContainer> */}
+        <AnalyticsScreen></AnalyticsScreen>
+
       </SafeAreaView>
     );
   }

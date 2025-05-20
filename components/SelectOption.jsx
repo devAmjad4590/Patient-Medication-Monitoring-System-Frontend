@@ -2,13 +2,14 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import SelectDropdown from 'react-native-select-dropdown';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { TIMEFRAMES } from '../utils/timeLabels';
 
 function SelectOption({ onSelect }) {
   const displayOptions = [
-    { label: 'Today', value: 'today', icon: 'calendar-today' },
-    { label: 'This Week', value: 'week', icon: 'calendar-week' },
-    { label: 'This Month', value: 'month', icon: 'calendar-month' },
-    { label: 'All Time', value: 'all', icon: 'calendar' },
+    { label: 'Today', value: TIMEFRAMES.TODAY, icon: 'calendar-today' },
+    { label: 'This Week', value: TIMEFRAMES.WEEK, icon: 'calendar-week' },
+    { label: 'This Month', value: TIMEFRAMES.MONTH, icon: 'calendar-month' },
+    { label: 'This Year', value: TIMEFRAMES.YEAR, icon: 'calendar' },
     { label: 'Custom', value: 'custom', icon: 'calendar-edit' },
   ];
   
@@ -18,7 +19,6 @@ function SelectOption({ onSelect }) {
         data={displayOptions}
         defaultValue={displayOptions[1]} // Default to "This Week"
         onSelect={(selectedItem, index) => {
-          console.log(selectedItem, index);
           // Call the parent's onSelect function if provided
           if (onSelect) {
             onSelect(selectedItem);

@@ -128,7 +128,7 @@ function NotificationDrawer() {
       screenOptions={{
         drawerPosition: 'right',
         headerShown: false,
-        drawerType: 'slide',
+        drawerType: 'front',
         drawerStyle: {
           width: 300,
           backgroundColor: '#fff',
