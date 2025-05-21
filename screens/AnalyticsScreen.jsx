@@ -6,7 +6,9 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ChartCard from '../components/ChartCard';
 import * as Progress from 'react-native-progress';
 import MetricGraphCard from '../components/MetricGraphCard';
+import TodayMetricCard from '../components/TodayMetricCard';
 import { TIMEFRAMES, getLabels, getDataPointCount } from '../utils/timeLabels';
+import { simplifiedMockData } from '../data/mockMetricsData';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -16,36 +18,66 @@ function AnalyticsScreen() {
   const [missedDoses, setMissedDoses] = useState(3); // State for missed doses
   const [currentStreak, setCurrentStreak] = useState(7); // State for current streak
   const [labels, setLabels] = useState([]);
-  // Sample data for the metric graphs
-  const bloodPressureData = [120, 125, 118, 122, 130, 125, 120];
-  const bloodGlucoseData = [85, 92, 88, 95, 90, 87, 91];
-  const heartRateData = [72, 75, 68, 70, 72, 74, 71];
-  const weightData = [82.5, 82.3, 82.1, 81.8, 81.5, 81.9, 81.7];
+  const [loading, setLoading] = useState(true);
+  
+  // States for graph data
+  const [bloodPressureData, setBloodPressureData] = useState([]);
+  const [bloodGlucoseData, setBloodGlucoseData] = useState([]);
+  const [heartRateData, setHeartRateData] = useState([]);
+  const [weightData, setWeightData] = useState([]);
 
+  // make the metric array and map it to the available data above
+  const metrics = [
+    { id: 'bloodPressure', title: 'Blood Pressure', unit: 'mmHg', color: '#5469d4' },
+    { id: 'bloodGlucose', title: 'Blood Glucose', unit: 'mg/dL', color: '#e67e22' },
+    { id: 'heartRate', title: 'Heart Rate', unit: 'bpm', color: '#e74c3c' },
+    { id: 'weight', title: 'Weight', unit: 'kg', color: '#3498db' }
+  ]
+  
   useEffect(() => {
+    setLoading(true);
     setLabels(getLabels(selectedTimeframe));
-    // cut the data points to match the selected timeframe
-    const dataPointCount = getDataPointCount(selectedTimeframe);
-  }, [selectedTimeframe])
+    
+    setBloodPressureData(extractValues(simplifiedMockData.bloodPressure[selectedTimeframe]));
+    setBloodGlucoseData(extractValues(simplifiedMockData.bloodGlucose[selectedTimeframe]));
+    setHeartRateData(extractValues(simplifiedMockData.heartRate[selectedTimeframe]));
+    setWeightData(extractValues(simplifiedMockData.weight[selectedTimeframe]));
+    
+    setLoading(false);
+  }, [selectedTimeframe]);
 
+  const todayValues = {
+    bloodPressure: simplifiedMockData.bloodPressure.today[0]?.value,
+    bloodGlucose: simplifiedMockData.bloodGlucose.today[0]?.value,
+    heartRate: simplifiedMockData.heartRate.today[0]?.value,
+    weight: simplifiedMockData.weight.today[0]?.value
+  }
+
+  const extractValues = (data) => {
+    if(!data) return [];
+    return data.map(item => item.value).filter(value => value !== null);
+  };
 
   const handleSelect = (selectedItem) => {
     setSelectedTimeframe(selectedItem.value);
     console.log(`Selected timeframe: ${selectedItem.value}`);
-    // Handle the selected item here
-  }
+  };
 
   const handleUpdateMetric = (metricType) => {
-    // Function to handle updating the specific metric
     console.log(`Update ${metricType} metric button pressed`);
-    // You can add navigation or modal opening logic here
   };
 
-  // Function to format the text shown in the circle
   const formatAdherenceText = (progress) => {
-    // Convert decimal to percentage and round it
     return `${Math.round(progress * 100)}%`;
   };
+
+  if (loading){
+    return (
+      <View style={[styles.root, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ fontSize: 20, textAlign: 'center', marginTop: 20 }}>Loading Data...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.root}>
@@ -107,39 +139,57 @@ function AnalyticsScreen() {
             </View>
           </ChartCard>
 
-          {/* Using our new MetricGraphCard component for all the graph cards */}
-          <MetricGraphCard
-            title="Blood Pressure"
-            data={bloodPressureData}
-            labels={labels}
-            onUpdatePress={() => handleUpdateMetric('blood-pressure')}
-            chartColor="#5469d4"
-          />
+          {/* Metric Cards - conditionally render text or graph */}
+          {selectedTimeframe === TIMEFRAMES.TODAY ? (
+            // Today View - Text Values
+            <>
+              {metrics.map(metric => (
+                <TodayMetricCard
+                  key={metric.id}
+                  title={metric.title}
+                  value={todayValues[metric.id]}
+                  unit={metric.unit}
+                  chartColor={metric.color}
+                  onUpdatePress={() => handleUpdateMetric(metric.id)}
+                />
+              ))}
+            </>
+          ) : (
+            // Other Timeframes - Graph Views
+            <>
+              <MetricGraphCard
+                title="Blood Pressure"
+                data={bloodPressureData}
+                labels={labels}
+                onUpdatePress={() => handleUpdateMetric('bloodPressure')}
+                chartColor="#5469d4"
+              />
 
-          <MetricGraphCard
-            title="Blood Glucose"
-            data={bloodGlucoseData}
-            labels={labels}
-            onUpdatePress={() => handleUpdateMetric('blood-glucose')}
-            chartColor="#e67e22"
-          />
+              <MetricGraphCard
+                title="Blood Glucose"
+                data={bloodGlucoseData}
+                labels={labels}
+                onUpdatePress={() => handleUpdateMetric('bloodGlucose')}
+                chartColor="#e67e22"
+              />
 
-          <MetricGraphCard
-            title="Heart Rate"
-            data={heartRateData}
-            labels={labels}
-            onUpdatePress={() => handleUpdateMetric('heart-rate')}
-            chartColor="#e74c3c"
-          />
+              <MetricGraphCard
+                title="Heart Rate"
+                data={heartRateData}
+                labels={labels}
+                onUpdatePress={() => handleUpdateMetric('heartRate')}
+                chartColor="#e74c3c"
+              />
 
-          <MetricGraphCard
-            title="Weight"
-            data={weightData}
-            labels={labels}
-            onUpdatePress={() => handleUpdateMetric('weight')}
-            chartColor="#3498db"
-          />
-
+              <MetricGraphCard
+                title="Weight"
+                data={weightData}
+                labels={labels}
+                onUpdatePress={() => handleUpdateMetric('weight')}
+                chartColor="#3498db"
+              />
+            </>
+          )}
         </View>
       </ScrollView>
     </View>
