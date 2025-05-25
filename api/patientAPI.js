@@ -95,6 +95,81 @@ export const getMedicationIntakeLogsById = async (intakeIds) => {
         console.error("Error fetching medication logs by ID:", err);
         throw err;
     }
+    
+}
+
+export const getPatientMetrics = async () => {
+    try{
+        const response = await api.get(`${patientURL}/health-metrics`);
+        console.log("Patient metrics response:", response.data);
+        return response.data;
+    }
+    catch(err){
+        console.log("Error fetching patient metrics:", err);
+    }
+}
+
+export const updatePatientMetrics = async (type, value) => {
+    console.log(value.systolic, value.diastolic)
+    try{
+        if(type !== 'bloodPressure'){
+            const response = await api.post(`${patientURL}/${type}`, {
+                value: value,
+            });
+            console.log("Update patient metrics response:", response.data);
+            return response.data;
+        }
+        else{
+            const response = await api.post(`${patientURL}/${type}`, {
+                systolic: value.systolic,
+                diastolic: value.diastolic,
+            });
+            console.log("Update patient metrics response:", response.data);
+            return response.data;
+        }
+    }
+    catch(err){
+        console.log("Error updating patient metrics:", err);
+    }
+}
+
+export const getPatientAdherence = async (type) => {
+    try {
+        const response = await api.post(`${patientURL}/adherence`, {
+            type: type,
+        });
+        console.log("Patient adherence response:", response.data);
+        return response.data;
+    }
+    catch (err) {
+        console.log("Error fetching patient adherence:", err);
+    }
+}
+
+export const getMissedDoses = async (type) => {
+    try {
+        const response = await api.post(`${patientURL}/missed`, {
+            type: type,
+        });
+        console.log("Patient adherence response:", response.data);
+        return response.data;
+    }
+    catch (err) {
+        console.log("Error fetching patient adherence:", err);
+    }
+}
+
+export const getPatientStreaks = async (type) => {
+    try {
+        const response = await api.post(`${patientURL}/streaks`, {
+            type: type,
+        });
+        console.log("Patient adherence response:", response.data);
+        return response.data;
+    }
+    catch (err) {
+        console.log("Error fetching patient adherence:", err);
+    }
 }
 
 

@@ -4,20 +4,22 @@ import SelectDropdown from 'react-native-select-dropdown';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { TIMEFRAMES } from '../utils/timeLabels';
 
-function SelectOption({ onSelect }) {
+function SelectOption({ onSelect, currentValue }) {
   const displayOptions = [
     { label: 'Today', value: TIMEFRAMES.TODAY, icon: 'calendar-today' },
     { label: 'This Week', value: TIMEFRAMES.WEEK, icon: 'calendar-week' },
     { label: 'This Month', value: TIMEFRAMES.MONTH, icon: 'calendar-month' },
     { label: 'This Year', value: TIMEFRAMES.YEAR, icon: 'calendar' },
-    { label: 'Custom', value: 'custom', icon: 'calendar-edit' },
   ];
+
+    const selectedOption = displayOptions.find(opt => opt.value === currentValue) || displayOptions[1];
+
   
   return (
     <View style={styles.optionContainer}>
       <SelectDropdown
         data={displayOptions}
-        defaultValue={displayOptions[1]} // Default to "This Week"
+        value={selectedOption} // Default to "This Week"
         onSelect={(selectedItem, index) => {
           // Call the parent's onSelect function if provided
           if (onSelect) {
@@ -27,11 +29,11 @@ function SelectOption({ onSelect }) {
         renderButton={(selectedItem, isOpened) => {
           return (
             <View style={styles.dropdownButtonStyle}>
-              {selectedItem && (
-                <Icon name={selectedItem.icon} style={styles.dropdownButtonIconStyle} />
+              {selectedOption && (
+                <Icon name={selectedOption.icon} style={styles.dropdownButtonIconStyle} />
               )}
               <Text style={styles.dropdownButtonTxtStyle}>
-                {(selectedItem && selectedItem.label) || 'Select period'}
+                {(selectedOption && selectedOption.label) || 'Select period'}
               </Text>
               <Icon name={isOpened ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
             </View>
