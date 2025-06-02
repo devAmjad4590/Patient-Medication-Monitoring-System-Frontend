@@ -1,12 +1,12 @@
 import React from 'react'
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import { Ionicons } from '@expo/vector-icons';
 import ModifySchedule from '../../screens/ModifySchedule';
 import BottomNavigator from '../navigators/BottomNavigator';
-import { Pressable, SafeAreaView } from 'react-native';
+import { Pressable, SafeAreaView, Text } from 'react-native';
 import PrimaryDrawerContent from './PrimaryDrawerContent';
 import VoiceSettingsScreen from '../../screens/VoiceSettingsScreen';
 import { MaterialIcons } from '@expo/vector-icons'
+import { logout } from '../../api/authAPI';
 
 
 const Drawer = createDrawerNavigator();
@@ -24,7 +24,7 @@ function PrimaryDrawer({ navigation }) {
         headerStyle: { backgroundColor: '#2F7EF5' },
         headerRight: () => (
           <Pressable onPress={() => navigation.getParent('RightDrawer')?.openDrawer()}>
-            <Ionicons name="notifications" size={24} style={{ marginRight: 15 }} />
+            <MaterialIcons name="notifications" color="black" size={32} style={{ marginRight: 15 }} />
           </Pressable>
         ),
         drawerItemStyle: {
@@ -51,10 +51,10 @@ function PrimaryDrawer({ navigation }) {
           headerTitle: '',
           title: 'Modify Schedule',
           drawerIcon: ({ color, size }) => (
-            <Ionicons name="calendar" size={size} color={color} />
+            <MaterialIcons name="schedule" size={size} color={color} />
           ),
           headerLeft: () => (
-            <Ionicons
+            <MaterialIcons
               name="arrow-back"
               size={24}
               color="black"
@@ -82,7 +82,7 @@ function PrimaryDrawer({ navigation }) {
             <MaterialIcons name="settings-voice" size={size} color={color} />
           ),
           headerLeft: () => (
-            <Ionicons
+            <MaterialIcons
               name="arrow-back"
               size={24}
               color="black"
@@ -104,12 +104,13 @@ function PrimaryDrawer({ navigation }) {
         options={{
           title: 'Logout',
           drawerIcon: ({ color, size }) => (
-            <Ionicons name="log-out-outline" size={size} color={color} />
+            <MaterialIcons name="logout" size={size} color={color} />
           ),
         }}
         listeners={({ navigation }) => ({
-          drawerItemPress: (e) => {
+          drawerItemPress: async (e) => {
             e.preventDefault();
+            await logout()
             navigation.reset({
               index: 0,
               routes: [{ name: 'Login' }],

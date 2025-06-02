@@ -12,20 +12,20 @@ function SelectOption({ onSelect, currentValue }) {
     { label: 'This Year', value: TIMEFRAMES.YEAR, icon: 'calendar' },
   ];
 
-    const selectedOption = displayOptions.find(opt => opt.value === currentValue) || displayOptions[1];
+  const selectedOption = displayOptions.find(opt => opt.value === currentValue) || displayOptions[1];
+  const disabledIndex = displayOptions.indexOf(selectedOption);
 
-  
   return (
     <View style={styles.optionContainer}>
       <SelectDropdown
         data={displayOptions}
-        value={selectedOption} // Default to "This Week"
+        value={selectedOption}
         onSelect={(selectedItem, index) => {
-          // Call the parent's onSelect function if provided
           if (onSelect) {
             onSelect(selectedItem);
           }
         }}
+        disabledIndexes={[disabledIndex]}
         renderButton={(selectedItem, isOpened) => {
           return (
             <View style={styles.dropdownButtonStyle}>
@@ -40,10 +40,30 @@ function SelectOption({ onSelect, currentValue }) {
           );
         }}
         renderItem={(item, index, isSelected) => {
+          const isDisabled = index === disabledIndex;
           return (
-            <View style={{...styles.dropdownItemStyle, ...(isSelected && {backgroundColor: '#D2D9DF'})}}>
-              <Icon name={item.icon} style={styles.dropdownItemIconStyle} />
-              <Text style={styles.dropdownItemTxtStyle}>{item.label}</Text>
+            <View
+              style={{
+                ...styles.dropdownItemStyle,
+                ...(isSelected && { backgroundColor: '#D2D9DF' }),
+                ...(isDisabled && styles.dropdownItemDisabledStyle),
+              }}
+            >
+              <Icon
+                name={item.icon}
+                style={{
+                  ...styles.dropdownItemIconStyle,
+                  ...(isDisabled && styles.dropdownItemIconDisabledStyle),
+                }}
+              />
+              <Text
+                style={{
+                  ...styles.dropdownItemTxtStyle,
+                  ...(isDisabled && styles.dropdownItemTxtDisabledStyle),
+                }}
+              >
+                {item.label}
+              </Text>
             </View>
           );
         }}
@@ -107,6 +127,17 @@ const styles = StyleSheet.create({
     fontSize: 20,
     marginRight: 8,
     color: '#2465FD',
+  },
+  // Disabled styles
+  dropdownItemDisabledStyle: {
+    backgroundColor: '#f0f0f0',
+    opacity: 0.6,
+  },
+  dropdownItemTxtDisabledStyle: {
+    color: '#b0b0b0',
+  },
+  dropdownItemIconDisabledStyle: {
+    color: '#b0b0b0',
   },
 });
 

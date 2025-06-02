@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, ScrollView, Modal, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { useState, useEffect, useCallback  } from 'react';
+import { View, Text, StyleSheet, Dimensions, ScrollView, Modal, TextInput, TouchableOpacity, Alert, RefreshControl } from 'react-native';
 import SelectOption from '../components/SelectOption';
+import { useFocusEffect } from '@react-navigation/native';
 import PrimaryButton from '../components/PrimaryButton';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ChartCard from '../components/ChartCard';
@@ -19,6 +20,7 @@ function AnalyticsScreen() {
   const [bestStreak, setBestStreak] = useState(0);
   const [labels, setLabels] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentMetric, setCurrentMetric] = useState(null);
 
@@ -40,6 +42,60 @@ function AnalyticsScreen() {
     { id: 'weight', title: 'Weight', unit: 'kg', color: '#3498db' }
   ];
 
+  // Move fetchMetrics outside and make it a useCallback
+  const fetchMetrics = useCallback(async () => {
+    setLoading(true);
+    setLabels(getLabels(selectedTimeframe));
+
+    try {
+      const metricsData = await getPatientMetrics();
+      const adherenceData = await getPatientAdherence(selectedTimeframe);
+      const missedDosesData = await getMissedDoses(selectedTimeframe);
+      const currentStreakData = await getPatientStreaks(selectedTimeframe);
+      
+      setBestStreak(currentStreakData.longestStreak);
+      setCurrentStreak(currentStreakData.currentStreak);
+      setMissedDoses(missedDosesData);
+      setAdherence(adherenceData);
+      
+      if (selectedTimeframe !== TIMEFRAMES.TODAY) {
+        setBloodPressureData(extractValues(metricsData.bloodPressure[selectedTimeframe]));
+        setBloodGlucoseData(extractValues(metricsData.bloodGlucose[selectedTimeframe]));
+        setHeartRateData(extractValues(metricsData.heartRate[selectedTimeframe]));
+        setWeightData(extractValues(metricsData.weight[selectedTimeframe]));
+      } else {
+        setBloodPressureData(extractValues(metricsData.bloodPressure[selectedTimeframe]));
+        setBloodGlucoseData(extractValues(metricsData.bloodGlucose[selectedTimeframe]));
+        setHeartRateData(extractValues(metricsData.heartRate[selectedTimeframe]));
+        setWeightData(extractValues(metricsData.weight[selectedTimeframe]));
+      }
+    } catch (err) {
+      console.error("Error fetching patient metrics:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedTimeframe]);
+
+  // This will run every time the screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchMetrics();
+      
+      // Optional: Return cleanup function if needed
+      return () => {
+        // Any cleanup when leaving the screen
+        console.log('User navigated away from Analytics screen');
+      };
+    }, [fetchMetrics])
+  );
+
+  // Pull to refresh function
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchMetrics();
+    setRefreshing(false);
+  }, [fetchMetrics]);
+
   const refreshData = async () => {
     setLoading(true);
     setLabels(getLabels(selectedTimeframe));
@@ -57,7 +113,6 @@ function AnalyticsScreen() {
           setBloodGlucoseData(extractValues(metricsData.bloodGlucose[selectedTimeframe]));
           setHeartRateData(extractValues(metricsData.heartRate[selectedTimeframe]));
           setWeightData(extractValues(metricsData.weight[selectedTimeframe]));
-
         }
         else {
           setBloodPressureData(extractValues(metricsData.bloodPressure[selectedTimeframe]));
@@ -72,45 +127,6 @@ function AnalyticsScreen() {
         setLoading(false);
       }
   }
-
-  useEffect(() => {
-    setLoading(true);
-    setLabels(getLabels(selectedTimeframe));
-
-    const fetchMetrics = async () => {
-      try {
-        const metricsData = await getPatientMetrics();
-        const adherenceData = await getPatientAdherence(selectedTimeframe);
-        const missedDosesData = await getMissedDoses(selectedTimeframe);
-        const currentStreakData = await getPatientStreaks(selectedTimeframe)
-        setBestStreak(currentStreakData.longestStreak);
-        setCurrentStreak(currentStreakData.currentStreak);
-        setMissedDoses(missedDosesData);
-        setAdherence(adherenceData);
-        if (selectedTimeframe !== TIMEFRAMES.TODAY) {
-          setBloodPressureData(extractValues(metricsData.bloodPressure[selectedTimeframe]));
-          setBloodGlucoseData(extractValues(metricsData.bloodGlucose[selectedTimeframe]));
-          setHeartRateData(extractValues(metricsData.heartRate[selectedTimeframe]));
-          setWeightData(extractValues(metricsData.weight[selectedTimeframe]));
-
-        }
-        else {
-          setBloodPressureData(extractValues(metricsData.bloodPressure[selectedTimeframe]));
-          setBloodGlucoseData(extractValues(metricsData.bloodGlucose[selectedTimeframe]));
-          setHeartRateData(extractValues(metricsData.heartRate[selectedTimeframe]));
-          setWeightData(extractValues(metricsData.weight[selectedTimeframe]));
-        }
-      }
-      catch (err) {
-        console.error("Error fetching patient metrics:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchMetrics();
-  }, [selectedTimeframe]);
-
-
 
   const handleInputChange = (value, inputType = 'single') => {
     const numericValue = value.replace(/[^0-9.]/g, '');
@@ -144,10 +160,8 @@ function AnalyticsScreen() {
       }
       try {
         const response = await updatePatientMetrics(currentMetric.id, {
-
           systolic: systolicValue,
           diastolic: diastolicValue
-
         })
         console.log(`Update ${currentMetric.id}:`, { systolic: systolicValue, diastolic: diastolicValue });
       }
@@ -181,8 +195,8 @@ function AnalyticsScreen() {
     clearInputs();
   };
 
-
   const extractValues = (data) => {
+    console.log("check data: ", data)
     if (!data) return [];
     if (!Array.isArray(data)) {
       console.log([data.value])
@@ -192,6 +206,7 @@ function AnalyticsScreen() {
   };
 
   const handleSelect = (selectedItem) => {
+    setLoading(true)
     setSelectedTimeframe(selectedItem.value);
     console.log(`Selected timeframe: ${selectedItem.value}`);
   };
@@ -326,7 +341,16 @@ function AnalyticsScreen() {
         </View>
       </Modal>
 
-      <ScrollView>
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#2F7EF5"
+            colors={["#2F7EF5"]}
+          />
+        }
+      >
         <SelectOption onSelect={handleSelect} currentValue={selectedTimeframe} />
         <View style={{ alignItems: 'flex-end', marginTop: 20 }}>
           <View style={{ width: '60%', height: 100 }}>

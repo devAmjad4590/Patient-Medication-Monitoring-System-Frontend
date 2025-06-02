@@ -5,7 +5,6 @@ const patientURL = '/api/patient'
 export const getMedicationLogs = async () => {
     try {
         const response = await api.get(`${patientURL}/medication-logs`);
-        console.log('test')
         return response.data.medicationIntakeLogs;
     }
     catch (error) {
@@ -171,5 +170,8 @@ export const getPatientStreaks = async (type) => {
         console.log("Error fetching patient adherence:", err);
     }
 }
+
+
+
 
 
