@@ -1,9 +1,36 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer'
 import ProfileCard from '../navigators/ProfileCard'
+import { checkAuth } from '../../api/authAPI'
 
 function PrimaryDrawerContent(props) {
+  const [user, setUser] = useState({})
+  const [loading, setLoading] = useState(true)
+
+  const fetchUser = async () => {
+    try {
+      setLoading(true)
+      const userData = await checkAuth();
+      if (!userData) {
+        console.log("NO USER DATA")
+        setUser({}) // Set empty object if no user data
+      } else {
+        setUser(userData)
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error)
+      setUser({})
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Fetch user data when component mounts
+  useEffect(() => {
+    fetchUser()
+  }, [])
+  
   return (
     <View style={styles.container}>
       <View style={styles.content}>
@@ -13,7 +40,7 @@ function PrimaryDrawerContent(props) {
           scrollEnabled={false}
         >
           <View style={styles.userContainer}>
-            <ProfileCard />
+            <ProfileCard fullName={user.name} email={user.email}/>
           </View>
 
           <DrawerItemList {...props} />

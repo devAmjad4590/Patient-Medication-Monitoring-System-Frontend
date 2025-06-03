@@ -7,30 +7,36 @@ import PrimaryDrawerContent from './PrimaryDrawerContent';
 import VoiceSettingsScreen from '../../screens/VoiceSettingsScreen';
 import { MaterialIcons } from '@expo/vector-icons'
 import { logout } from '../../api/authAPI';
-
+import { useNotifications } from '../../NotificationContext'; // Import the context
 
 const Drawer = createDrawerNavigator();
 
-
 function PrimaryDrawer({ navigation }) {
+  const { loadNotifications } = useNotifications(); // Get the refresh function
+
+  const handleNotificationPress = async () => {
+    // Refresh notifications before opening the drawer
+    await loadNotifications();
+    navigation.getParent('RightDrawer')?.openDrawer();
+  };
+
   return (
     <Drawer.Navigator
       drawerContent={(props) => 
         <SafeAreaView style={{ flex: 1 }}>
-      <PrimaryDrawerContent {...props} />
-      </SafeAreaView>
-    }
+          <PrimaryDrawerContent {...props} />
+        </SafeAreaView>
+      }
       screenOptions={{
         headerStyle: { backgroundColor: '#2F7EF5' },
         headerRight: () => (
-          <Pressable onPress={() => navigation.getParent('RightDrawer')?.openDrawer()}>
+          <Pressable onPress={handleNotificationPress}>
             <MaterialIcons name="notifications" color="black" size={32} style={{ marginRight: 15 }} />
           </Pressable>
         ),
         drawerItemStyle: {
           borderRadius: 0,
         },
-
       }}
     >
       <Drawer.Screen
@@ -120,7 +126,6 @@ function PrimaryDrawer({ navigation }) {
       >
         {() => null}
       </Drawer.Screen>
-
     </Drawer.Navigator>
   );
 }

@@ -13,6 +13,35 @@ export const getMedicationLogs = async () => {
     }
 }
 
+export const getMedicationSchedule = async (medicationId) => {
+    try {
+        const response = await api.get(`${patientURL}/medications/${medicationId}/schedule`);
+        return response.data;
+    } catch (err) {
+        console.log("Error fetching medication schedule:");
+    }
+}
+
+export const updateMedicationSchedule = async (medicationId, selectedDoseTimes) => {
+  try {
+    const response = await api.patch(`/api/patient/medications/${medicationId}/schedule`, {
+      selectedDoseTimes
+    });
+    
+    // Always return the response data, whether success or failure
+    return response.data;
+  } catch (error) {
+    // Only throw for actual network/connection errors
+    if (error.response) {
+      // Server responded with error status
+      return error.response.data;
+    } else {
+      // Network error or request setup error
+      throw new Error('Network error. Please check your connection.');
+    }
+  }
+};
+
 export const getPatientMedication = async () => {
     try {
         const response = await api.get(`${patientURL}/medications`);

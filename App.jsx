@@ -22,6 +22,7 @@ import { registerPushToken } from './api/notificationAPI';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AnalyticsScreen from './screens/AnalyticsScreen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { NotificationProvider } from './NotificationContext';
 
 
 // Set up notifications configuration
@@ -107,6 +108,7 @@ export default function App() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style="dark" />
+        <NotificationProvider>
         <NavigationContainer ref={navigationRef}>
           <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Welcome" component={WelcomeScreen} />
@@ -130,6 +132,7 @@ export default function App() {
             />
           </Stack.Navigator>
         </NavigationContainer>
+        </NotificationProvider>
         {/* <AnalyticsScreen></AnalyticsScreen> */}
 
       </SafeAreaView>

@@ -43,3 +43,13 @@ export const logout = async () => {
     }
 }
 
+export const checkAuth = async () => {
+    try{
+        const response = await api.get('/api/auth/status')
+        return response.data
+    }
+    catch(err){
+        console.log("Failed to check auth")
+    }
+}
+

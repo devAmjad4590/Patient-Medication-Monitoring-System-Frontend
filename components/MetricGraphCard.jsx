@@ -14,6 +14,7 @@ function MetricGraphCard({
   onUpdatePress,
   chartColor = '#5469d4',
   chartConfig = {},
+  hidePointsAtIndex,
   height = 190
 }) {
   
@@ -67,6 +68,7 @@ function MetricGraphCard({
             marginVertical: 8,
             borderRadius: 16
           }}
+          hidePointsAtIndex={hidePointsAtIndex}
         />
       </ChartCard>
     </View>

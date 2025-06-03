@@ -19,7 +19,7 @@ export default function MedicationScreen({ navigation }) {
           if (isActive) {
             // Remove duplicates by id
             const medMap = Array.from(
-              new Map(res.map(med => [med.id, med])).values()
+              new Map(res.map(med => [med._id, med])).values()
             );
             setInventory(medMap);
           }

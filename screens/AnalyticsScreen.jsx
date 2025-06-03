@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback  } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Dimensions, ScrollView, Modal, TextInput, TouchableOpacity, Alert, RefreshControl } from 'react-native';
 import SelectOption from '../components/SelectOption';
 import { useFocusEffect } from '@react-navigation/native';
@@ -9,7 +9,11 @@ import * as Progress from 'react-native-progress';
 import MetricGraphCard from '../components/MetricGraphCard';
 import TodayMetricCard from '../components/TodayMetricCard';
 import { TIMEFRAMES, getLabels } from '../utils/timeLabels';
-import { getPatientMetrics, getPatientAdherence, getMissedDoses, getPatientStreaks, updatePatientMetrics } from '../api/patientAPI';
+import { getPatientMetrics, getPatientAdherence, getMissedDoses, getPatientStreaks, updatePatientMetrics, getMedicationLogs } from '../api/patientAPI';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system';
+
 const screenWidth = Dimensions.get('window').width;
 
 function AnalyticsScreen() {
@@ -23,6 +27,7 @@ function AnalyticsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentMetric, setCurrentMetric] = useState(null);
+  const [generatingPDF, setGeneratingPDF] = useState(false);
 
   // Input states
   const [singleValue, setSingleValue] = useState('');
@@ -34,6 +39,9 @@ function AnalyticsScreen() {
   const [bloodGlucoseData, setBloodGlucoseData] = useState([]);
   const [heartRateData, setHeartRateData] = useState([]);
   const [weightData, setWeightData] = useState([]);
+
+  // States for PDF data
+  const [medicationLogsData, setMedicationLogsData] = useState([]);
 
   const metrics = [
     { id: 'bloodPressure', title: 'Blood Pressure', unit: 'mmHg', color: '#5469d4' },
@@ -52,12 +60,12 @@ function AnalyticsScreen() {
       const adherenceData = await getPatientAdherence(selectedTimeframe);
       const missedDosesData = await getMissedDoses(selectedTimeframe);
       const currentStreakData = await getPatientStreaks(selectedTimeframe);
-      
+
       setBestStreak(currentStreakData.longestStreak);
       setCurrentStreak(currentStreakData.currentStreak);
       setMissedDoses(missedDosesData);
       setAdherence(adherenceData);
-      
+
       if (selectedTimeframe !== TIMEFRAMES.TODAY) {
         setBloodPressureData(extractValues(metricsData.bloodPressure[selectedTimeframe]));
         setBloodGlucoseData(extractValues(metricsData.bloodGlucose[selectedTimeframe]));
@@ -80,7 +88,7 @@ function AnalyticsScreen() {
   useFocusEffect(
     useCallback(() => {
       fetchMetrics();
-      
+
       // Optional: Return cleanup function if needed
       return () => {
         // Any cleanup when leaving the screen
@@ -100,33 +108,340 @@ function AnalyticsScreen() {
     setLoading(true);
     setLabels(getLabels(selectedTimeframe));
     try {
-        const metricsData = await getPatientMetrics();
-        const adherenceData = await getPatientAdherence(selectedTimeframe);
-        const missedDosesData = await getMissedDoses(selectedTimeframe);
-        const currentStreakData = await getPatientStreaks(selectedTimeframe)
-        setBestStreak(currentStreakData.longestStreak);
-        setCurrentStreak(currentStreakData.currentStreak);
-        setMissedDoses(missedDosesData);
-        setAdherence(adherenceData);
-        if (selectedTimeframe !== TIMEFRAMES.TODAY) {
-          setBloodPressureData(extractValues(metricsData.bloodPressure[selectedTimeframe]));
-          setBloodGlucoseData(extractValues(metricsData.bloodGlucose[selectedTimeframe]));
-          setHeartRateData(extractValues(metricsData.heartRate[selectedTimeframe]));
-          setWeightData(extractValues(metricsData.weight[selectedTimeframe]));
-        }
-        else {
-          setBloodPressureData(extractValues(metricsData.bloodPressure[selectedTimeframe]));
-          setBloodGlucoseData(extractValues(metricsData.bloodGlucose[selectedTimeframe]));
-          setHeartRateData(extractValues(metricsData.heartRate[selectedTimeframe]));
-          setWeightData(extractValues(metricsData.weight[selectedTimeframe]));
-        }
+      const metricsData = await getPatientMetrics();
+      const adherenceData = await getPatientAdherence(selectedTimeframe);
+      const missedDosesData = await getMissedDoses(selectedTimeframe);
+      const currentStreakData = await getPatientStreaks(selectedTimeframe)
+      setBestStreak(currentStreakData.longestStreak);
+      setCurrentStreak(currentStreakData.currentStreak);
+      setMissedDoses(missedDosesData);
+      setAdherence(adherenceData);
+      if (selectedTimeframe !== TIMEFRAMES.TODAY) {
+        setBloodPressureData(extractValues(metricsData.bloodPressure[selectedTimeframe]));
+        setBloodGlucoseData(extractValues(metricsData.bloodGlucose[selectedTimeframe]));
+        setHeartRateData(extractValues(metricsData.heartRate[selectedTimeframe]));
+        setWeightData(extractValues(metricsData.weight[selectedTimeframe]));
       }
-      catch (err) {
-        console.error("Error fetching patient metrics:", err);
-      } finally {
-        setLoading(false);
+      else {
+        setBloodPressureData(extractValues(metricsData.bloodPressure[selectedTimeframe]));
+        setBloodGlucoseData(extractValues(metricsData.bloodGlucose[selectedTimeframe]));
+        setHeartRateData(extractValues(metricsData.heartRate[selectedTimeframe]));
+        setWeightData(extractValues(metricsData.weight[selectedTimeframe]));
       }
+    }
+    catch (err) {
+      console.error("Error fetching patient metrics:", err);
+    } finally {
+      setLoading(false);
+    }
   }
+
+  // PDF Generation Functions
+  const generateHealthReportHTML = (metricsData, medicationData) => {
+    const currentDate = new Date().toLocaleDateString();
+    const timeframeName = getTimeframeName(selectedTimeframe);
+
+    // Generate medication table rows
+    const medicationRows = medicationData.map(log => {
+      const intakeDate = new Date(log.intakeTime).toLocaleDateString();
+      const intakeTime = new Date(log.intakeTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const statusColor = log.status === 'Taken' ? '#28a745' : log.status === 'Missed' ? '#dc3545' : '#ffc107';
+
+      return `
+        <tr>
+          <td style="padding: 8px; border: 1px solid #ddd;">${log.medication?.name || 'N/A'}</td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${log.medication?.type || 'N/A'}</td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${intakeDate}</td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${intakeTime}</td>
+          <td style="padding: 8px; border: 1px solid #ddd; color: ${statusColor}; font-weight: bold;">${log.status}</td>
+        </tr>
+      `;
+    }).join('');
+
+    // Generate health metrics summary
+    const healthMetricsSummary = metrics.map(metric => {
+      let data, latestValue;
+
+      switch (metric.id) {
+        case 'bloodPressure':
+          data = bloodPressureData;
+          latestValue = data.length > 0 ? `${data[data.length - 1]} mmHg` : 'No data';
+          break;
+        case 'bloodGlucose':
+          data = bloodGlucoseData;
+          latestValue = data.length > 0 ? `${data[data.length - 1]} mg/dL` : 'No data';
+          break;
+        case 'heartRate':
+          data = heartRateData;
+          latestValue = data.length > 0 ? `${data[data.length - 1]} bpm` : 'No data';
+          break;
+        case 'weight':
+          data = weightData;
+          latestValue = data.length > 0 ? `${data[data.length - 1]} kg` : 'No data';
+          break;
+        default:
+          latestValue = 'No data';
+      }
+
+      return `
+        <tr>
+          <td style="padding: 8px; border: 1px solid #ddd;">${metric.title}</td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${latestValue}</td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${data.length} readings</td>
+        </tr>
+      `;
+    }).join('');
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Health Report</title>
+        <style>
+          body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #333;
+          }
+          .header {
+            text-align: center;
+            background: linear-gradient(135deg, #7313B2, #2F7EF5);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+          }
+          .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+          }
+          .header p {
+            margin: 10px 0 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+          }
+          .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+          }
+          .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+          }
+          .summary-card h3 {
+            margin: 0 0 10px 0;
+            color: #7313B2;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+          }
+          .summary-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+          }
+          .section {
+            background: white;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+          }
+          .section-header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #dee2e6;
+          }
+          .section-header h2 {
+            margin: 0;
+            color: #333;
+            font-size: 20px;
+          }
+          .section-content {
+            padding: 20px;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+          }
+          th {
+            background-color: #7313B2;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid #7313B2;
+          }
+          td {
+            padding: 8px;
+            border: 1px solid #ddd;
+          }
+          tr:nth-child(even) {
+            background-color: #f8f9fa;
+          }
+          .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+          }
+          .footer p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>Health Report</h1>
+          <p>Generated on ${currentDate} • Period: ${timeframeName}</p>
+        </div>
+
+        <div class="summary-grid">
+          <div class="summary-card">
+            <h3>Medication Adherence</h3>
+            <div class="value">${Math.round(adherence * 100)}%</div>
+          </div>
+          <div class="summary-card">
+            <h3>Missed Doses</h3>
+            <div class="value">${missedDoses}</div>
+          </div>
+          <div class="summary-card">
+            <h3>Current Streak</h3>
+            <div class="value">${currentStreak} days</div>
+          </div>
+          <div class="summary-card">
+            <h3>Best Streak</h3>
+            <div class="value">${bestStreak} days</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <h2>Health Metrics Summary</h2>
+          </div>
+          <div class="section-content">
+            <table>
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th>Latest Value</th>
+                  <th>Total Readings</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${healthMetricsSummary}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <h2>Medication Intake Log</h2>
+          </div>
+          <div class="section-content">
+            <table>
+              <thead>
+                <tr>
+                  <th>Medication Name</th>
+                  <th>Type</th>
+                  <th>Date</th>
+                  <th>Scheduled Time</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${medicationRows}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="footer">
+          <p>This report was generated automatically by the Patient Medication Monitoring System</p>
+          <p>For questions about your health data, please consult with your healthcare provider</p>
+        </div>
+      </body>
+      </html>
+    `;
+  };
+
+  const getTimeframeName = (timeframe) => {
+    switch (timeframe) {
+      case TIMEFRAMES.TODAY: return 'Today';
+      case TIMEFRAMES.WEEK: return 'This Week';
+      case TIMEFRAMES.MONTH: return 'This Month';
+      case TIMEFRAMES.YEAR: return 'This Year';
+      default: return 'Custom Period';
+    }
+  };
+
+  const generatePDFReport = async () => {
+    try {
+      setGeneratingPDF(true);
+
+      // Fetch medication logs for the table
+      const medicationLogs = await getMedicationLogs();
+      setMedicationLogsData(medicationLogs);
+
+      // Generate HTML content
+      const htmlContent = generateHealthReportHTML(
+        {
+          bloodPressure: bloodPressureData,
+          bloodGlucose: bloodGlucoseData,
+          heartRate: heartRateData,
+          weight: weightData
+        },
+        medicationLogs
+      );
+
+      // Generate PDF
+      const { uri } = await Print.printToFileAsync({
+        html: htmlContent,
+        base64: false,
+        margins: {
+          left: 20,
+          top: 20,
+          right: 20,
+          bottom: 20,
+        },
+      });
+
+      console.log('PDF generated at:', uri);
+
+      // Share the PDF
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (isAvailable) {
+        await Sharing.shareAsync(uri, {
+          mimeType: 'application/pdf',
+          dialogTitle: 'Share Health Report',
+          UTI: 'com.adobe.pdf'
+        });
+      } else {
+        Alert.alert('Error', 'Sharing is not available on this device');
+      }
+
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      Alert.alert('Error', 'Failed to generate PDF report. Please try again.');
+    } finally {
+      setGeneratingPDF(false);
+    }
+  };
 
   const handleInputChange = (value, inputType = 'single') => {
     const numericValue = value.replace(/[^0-9.]/g, '');
@@ -196,13 +511,25 @@ function AnalyticsScreen() {
   };
 
   const extractValues = (data) => {
-    console.log("check data: ", data)
+    console.log(data)
     if (!data) return [];
+
     if (!Array.isArray(data)) {
       console.log([data.value])
       return data.value ? [data.value] : [];
     }
-    return data.map(item => item.value).filter(value => value !== null);
+
+    // Filter out zero values but keep the structure for proper alignment
+    return data.map(item => {
+      // If value is 0 or null, return null (this creates gaps in the chart)
+      if (item.value === 0 || item.value === null || item.value === undefined) {
+        return 38;
+      }
+      return item.value;
+    }).filter((value, index, array) => {
+      // Keep null values for proper spacing, but remove trailing nulls
+      return value !== null || index < array.length - 1;
+    });
   };
 
   const handleSelect = (selectedItem) => {
@@ -354,7 +681,12 @@ function AnalyticsScreen() {
         <SelectOption onSelect={handleSelect} currentValue={selectedTimeframe} />
         <View style={{ alignItems: 'flex-end', marginTop: 20 }}>
           <View style={{ width: '60%', height: 100 }}>
-            <PrimaryButton><Text style={{ fontSize: 20, fontWeight: '400' }}>Generate Report  </Text><Icon size={20} name='content-save-edit' /></PrimaryButton>
+            <PrimaryButton onPress={generatePDFReport} disabled={generatingPDF}>
+              <Text style={{ fontSize: 20, fontWeight: '400' }}>
+                {generatingPDF ? 'Generating...' : 'Generate Report'}
+              </Text>
+              <Icon size={20} name='content-save-edit' />
+            </PrimaryButton>
           </View>
         </View>
         <View style={styles.content}>

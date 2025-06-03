@@ -2,15 +2,15 @@ import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
-function ProfileCard({userName, userEmail}) {
+function ProfileCard({fullName, email}) {
   return (
     <View style={styles.profileContainer}>
         <View style={styles.iconContainer}>
         <FontAwesome name="user-circle" size={60} color="black" />
         </View>
         <View style={styles.userContainer}>
-            <Text style={styles.nameText}>Amgad Elrashid</Text>
-            <Text style={styles.emailText}>1211307882@student.mmu.edu.my</Text>
+            <Text style={styles.nameText}>{fullName}</Text>
+            <Text style={styles.emailText}>{email}</Text>
         </View>
     </View>
   )

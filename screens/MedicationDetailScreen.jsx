@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 import PrimaryButton from '../components/PrimaryButton';
@@ -35,6 +36,24 @@ export default function MedicationDetail({ route }) {
     }, [id])
   );
 
+  // Function to render the appropriate icon based on medication type
+  const renderMedicationIcon = () => {
+    const iconSize = 120;
+    const iconColor = "black";
+
+    switch (selectedMedication?.type?.toLowerCase()) {
+      case "tablet":
+        return <FontAwesome5 name="tablets" size={iconSize} color={iconColor} />;
+      case "syrup":
+        return <MaterialCommunityIcons name="bottle-tonic-plus-outline" size={iconSize} color={iconColor} />;
+      case "syringe":
+        return <FontAwesome5 name="syringe" size={iconSize} color={iconColor} />;
+      case "capsule":
+      default:
+        return <MaterialCommunityIcons name="pill" size={iconSize} color={iconColor} />;
+    }
+  };
+
   // Loader until we have fresh data
   if (!selectedMedication) {
     return (
@@ -47,7 +66,7 @@ export default function MedicationDetail({ route }) {
   return (
     <View style={styles.container}>
       <View style={styles.upperContainer}>
-        <MaterialCommunityIcons name="pill" size={120} color="black" />
+        {renderMedicationIcon()}
       </View>
 
       <View style={styles.lowerContainer}>

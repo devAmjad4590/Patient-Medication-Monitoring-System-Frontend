@@ -1,59 +1,88 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import PrimaryDrawer from '../navigators/PrimaryDrawer';
-import { View, Text, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, ScrollView, SafeAreaView, RefreshControl } from 'react-native';
 import NotificationCard from './NotificationCard';
 import { Button } from 'react-native-ui-lib';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+import { useNotifications } from '../../NotificationContext'; // Import the context
 
 const RightDrawer = createDrawerNavigator();
 
 function NotificationDrawer() {
-  // Initialize with null to track loading state
-  const [notifications, setNotifications] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const navigation = useNavigation();
+  
+  // Use the context instead of local state
+  const { 
+    notifications, 
+    isLoading, 
+    loadNotifications, 
+    clearAllNotifications 
+  } = useNotifications();
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('drawerOpen', () => {
+      loadNotifications();
+    });
+    return unsubscribe;
+  }, [navigation, loadNotifications]);
 
   function handleClearAll() {
-    console.log("Clear all notifications")
-    setNotifications([]);
-    AsyncStorage.removeItem('notificationsHistory').then(() => {
-      console.log("Notifications cleared");
-    }).catch(err => {
-      console.error("Error clearing notifications:", err);
-    });
+    console.log("Clear all notifications");
+    clearAllNotifications();
   }
-  
-  // Load notifications only once on mount
-  useEffect(() => {
-    loadNotifications();
-  }, []);
 
-  const loadNotifications = async () => {
-    try {
-      setIsLoading(true);
-      const storedNotifications = await AsyncStorage.getItem('notificationsHistory');
-      if (storedNotifications) {
-        const parsedNotifications = JSON.parse(storedNotifications);
-        setNotifications(parsedNotifications);
-      } else {
-        setNotifications([]); // Ensure we always have an array
-      }
-    } catch (error) {
-      console.error("Error loading notifications:", error);
-      setNotifications([]); // Fallback to empty array on error
-    } finally {
-      setIsLoading(false);
+  // Load notifications on initial mount
+  useEffect(() => {
+    console.log("NotificationDrawer mounted, loading notifications");
+    loadNotifications();
+  }, [loadNotifications]);
+
+  // Manual refresh for pull-to-refresh
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadNotifications();
+    setRefreshing(false);
+  }, [loadNotifications]);
+
+  // Helper function to extract notification data from the stored format
+  const getNotificationData = (notification) => {
+    // Handle different notification formats
+    if (notification.request && notification.request.content) {
+      // Expo notification format
+      return {
+        id: notification.request.identifier || notification.identifier || Math.random().toString(),
+        title: notification.request.content.title || 'Notification',
+        body: notification.request.content.body || '',
+        date: notification.date || notification.timestamp
+      };
+    } else if (notification.notification) {
+      // Another possible format
+      return {
+        id: notification.identifier || Math.random().toString(),
+        title: notification.notification.title || 'Notification',
+        body: notification.notification.body || '',
+        date: notification.date || notification.timestamp
+      };
+    } else {
+      // Direct format or fallback
+      return {
+        id: notification.id || notification.identifier || Math.random().toString(),
+        title: notification.title || 'Notification',
+        body: notification.body || notification.message || '',
+        date: notification.date || notification.timestamp
+      };
     }
   };
 
-  // Custom drawer content with loading state handling
-  const renderDrawerContent = (props) => {
-    // Return a loading placeholder or the actual content
+  // Custom drawer content component
+  const DrawerContent = (props) => {
     if (isLoading) {
       return (
         <SafeAreaView style={{ flex: 1 }}>
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Text>Loading...</Text>
+            <Text>Loading notifications...</Text>
           </View>
         </SafeAreaView>
       );
@@ -63,56 +92,72 @@ function NotificationDrawer() {
       <SafeAreaView style={{ flex: 1 }}>
         <View style={{ flex: 1, paddingTop: 30 }}>
           <View style={{ flex: 1 }}>
-            <Text style={{ 
-              fontSize: 22, 
-              fontWeight: '600', // Fixed fontWeight
-              textAlign: 'center', 
-              marginBottom: 20 
+            <Text style={{
+              fontSize: 22,
+              fontWeight: '600',
+              textAlign: 'center',
+              marginBottom: 20
             }}>
               Notifications
             </Text>
-            
-            {(!notifications || notifications.length === 0) && (
-              <Text style={{ 
-                fontSize: 16, 
-                textAlign: 'center', 
-                color: '#888' 
-              }}>
-                No notifications available
-              </Text>
+
+            {(!notifications || notifications.length === 0) && !isLoading && (
+              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Text style={{
+                  fontSize: 16,
+                  textAlign: 'center',
+                  color: '#888'
+                }}>
+                  No notifications available
+                </Text>
+              </View>
             )}
-            
-            <ScrollView style={{ paddingHorizontal: 20 }} showsVerticalScrollIndicator={false}>
-              {notifications && notifications.map((notification) => (
-                <NotificationCard 
-                  key={notification.id || Math.random().toString()} 
-                  title={notification.title || 'Notification'} 
-                  message={notification.body || ''} 
+
+            <ScrollView
+              style={{ paddingHorizontal: 20 }}
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  colors={['#2F7EF5']}
+                  tintColor="#2F7EF5"
                 />
-              ))}
+              }
+            >
+              {notifications && notifications.map((notification) => {
+                const notificationData = getNotificationData(notification);
+                return (
+                  <NotificationCard
+                    key={notificationData.id}
+                    title={notificationData.title}
+                    message={notificationData.body}
+                  />
+                );
+              })}
             </ScrollView>
           </View>
-          
-          <View style={{ 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            width: '100%', 
-            marginBottom: 20 
+
+          <View style={{
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            marginBottom: 20
           }}>
             <View style={{ width: 200, borderRadius: 30 }}>
-              <Button 
+              <Button
                 onPress={() => {
                   handleClearAll();
                   props.navigation.closeDrawer();
-                }} 
-                label="Clear All" 
-                style={{marginBottom: 10}} 
-                backgroundColor="#FDFDFD" 
-                labelStyle={{ 
-                  color: "black", 
-                  fontSize: 16, 
-                  fontWeight: '600'  // Fixed fontWeight
-                }} 
+                }}
+                label="Clear All"
+                style={{ marginBottom: 10 }}
+                backgroundColor="#FDFDFD"
+                labelStyle={{
+                  color: "black",
+                  fontSize: 16,
+                  fontWeight: '600'
+                }}
                 outlineColor="black"
               />
             </View>
@@ -134,7 +179,7 @@ function NotificationDrawer() {
           backgroundColor: '#fff',
         },
       }}
-      drawerContent={renderDrawerContent}
+      drawerContent={DrawerContent}
     >
       <RightDrawer.Screen name="MainApp" component={PrimaryDrawer} />
     </RightDrawer.Navigator>
