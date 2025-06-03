@@ -1,6 +1,6 @@
 // MetricGraphCard.js
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Dimensions, Text } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ChartCard from './ChartCard';
 import { LineChart } from 'react-native-chart-kit';
@@ -49,27 +49,35 @@ function MetricGraphCard({
           </TouchableOpacity>
         </View>
         
-        <LineChart
-          data={{
-            labels: labels,
-            datasets: [
-              {
-                data: data,
-                color: (opacity = 1) => `rgba(84, 105, 212, ${opacity})`,
-                strokeWidth: 2
-              }
-            ],
-          }}
-          width={screenWidth - 55}
-          height={height}
-          chartConfig={mergedChartConfig}
-          bezier
-          style={{
-            marginVertical: 8,
-            borderRadius: 16
-          }}
-          hidePointsAtIndex={hidePointsAtIndex}
-        />
+        {data.length === 0 ? (
+          // No Data Display
+          <View style={styles.noDataContainer}>
+            <Text style={styles.noDataText}>No Data</Text>
+          </View>
+        ) : (
+          // Regular Chart Display
+          <LineChart
+            data={{
+              labels: labels,
+              datasets: [
+                {
+                  data: data,
+                  color: (opacity = 1) => `rgba(84, 105, 212, ${opacity})`,
+                  strokeWidth: 2
+                }
+              ],
+            }}
+            width={screenWidth - 55}
+            height={height}
+            chartConfig={mergedChartConfig}
+            bezier
+            style={{
+              marginVertical: 8,
+              borderRadius: 16
+            }}
+            hidePointsAtIndex={hidePointsAtIndex}
+          />
+        )}
       </ChartCard>
     </View>
   );
@@ -99,6 +107,17 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
     marginTop: 9
+  },
+  noDataContainer: {
+    height: 190,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 8,
+  },
+  noDataText: {
+    fontSize: 18,
+    color: '#999',
+    fontWeight: '500'
   }
 });
 

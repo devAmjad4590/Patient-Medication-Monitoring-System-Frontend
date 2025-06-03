@@ -1,12 +1,14 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import InventoryCard from '../components/InventoryCard';
 import { getPatientMedication } from '../api/patientAPI';
 
 export default function MedicationScreen({ navigation }) {
   const [inventory, setInventory] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Fetch (and dedupe) every time this screen gains focus
   useFocusEffect(
@@ -14,6 +16,7 @@ export default function MedicationScreen({ navigation }) {
       let isActive = true;
 
       const fetchMedications = async () => {
+        setLoading(true);
         try {
           const res = await getPatientMedication();
           if (isActive) {
@@ -25,6 +28,10 @@ export default function MedicationScreen({ navigation }) {
           }
         } catch (err) {
           console.error('Error fetching medication:', err);
+        } finally {
+          if (isActive) {
+            setLoading(false);
+          }
         }
       };
 
@@ -34,28 +41,51 @@ export default function MedicationScreen({ navigation }) {
       return () => {
         isActive = false;
       };
-    }, []) // no dependencies → stays the same function instance
+    }, [])
   );
 
   function handlePress(id) {
     navigation.navigate('MedicationDetail', { id });
   }
 
-  return (
-    <ScrollView style={styles.root}>
-      <View style={styles.innerContainer}>
-        <Text style={styles.title}>Inventory</Text>
-        {inventory.map(item => (
-          <InventoryCard
-            key={item._id}
-            medicationName={item.name}
-            medicationType={item.type}
-            stock={item.stock}
-            onPress={() => handlePress(item._id)}
-          />
-        ))}
+  // Empty state component
+  const EmptyState = () => (
+    <View style={styles.emptyStateContainer}>
+      <Icon name="pill-off" size={80} color="#ccc" />
+      <Text style={styles.emptyStateTitle}>No Medications in Inventory</Text>
+      <Text style={styles.emptyStateSubtitle}>
+        Your medication inventory is empty. Contact your healthcare provider to add medications to your treatment plan.
+      </Text>
+    </View>
+  );
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading medications...</Text>
       </View>
-    </ScrollView>
+    );
+  }
+
+  return (
+    <View style={styles.root}>
+      <Text style={styles.title}>Inventory</Text>
+      {inventory.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+          {inventory.map(item => (
+            <InventoryCard
+              key={item._id}
+              medicationName={item.name}
+              medicationType={item.type}
+              stock={item.stock}
+              onPress={() => handlePress(item._id)}
+            />
+          ))}
+        </ScrollView>
+      )}
+    </View>
   );
 }
 
@@ -65,13 +95,45 @@ const styles = StyleSheet.create({
     paddingTop: 28,
     paddingBottom: 90,
   },
-  innerContainer: {
-    paddingBottom: 30,
-  },
   title: {
     fontSize: 24,
     fontWeight: '600',
     textAlign: 'center',
     marginBottom: 20,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 30,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#666',
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  emptyStateTitle: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#333',
+    textAlign: 'center',
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  emptyStateSubtitle: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 22,
   },
 });

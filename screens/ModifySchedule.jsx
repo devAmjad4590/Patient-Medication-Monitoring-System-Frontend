@@ -192,32 +192,47 @@ const ModifySchedule = ({ navigation }) => {
   }
 };
 
+  // Empty state component
+  const EmptyMedicationsState = () => (
+    <View style={styles.emptyStateContainer}>
+      <MaterialCommunityIcons name="pill-off" size={80} color="#ccc" />
+      <Text style={styles.emptyStateTitle}>No Medications Available</Text>
+      <Text style={styles.emptyStateSubtitle}>
+        You don't have any medications in your inventory to modify schedules for. Add medications to your treatment plan first.
+      </Text>
+    </View>
+  );
+
   const renderMedicationList = () => (
     <View style={styles.container}>
-      <Text style={styles.title}>Select Medication to Modify</Text>
-      <Text style={styles.subtitle}>Choose which medication schedule you want to change</Text>
       
-      <ScrollView style={styles.medicationList} showsVerticalScrollIndicator={false}>
-        {medications.map((medication) => (
-          <Pressable
-            key={medication._id}
-            style={styles.medicationCard}
-            onPress={() => handleMedicationSelect(medication)}
-          >
-            {renderMedicationIcon(medication.type)}
-            <View style={styles.medicationInfo}>
-              <Text style={styles.medicationName}>{medication.name}</Text>
-              <Text style={styles.medicationDetails}>
-                {medication.dosage} {medication.unit} • {medication.type}
-              </Text>
-              <Text style={styles.currentSchedule}>
-                {medication.selectedDoseTimes?.length || 0} doses per day
-              </Text>
-            </View>
-            <AntDesign name="right" size={20} color="#7313B2" />
-          </Pressable>
-        ))}
-      </ScrollView>
+      {medications.length === 0 ? (
+        <EmptyMedicationsState />
+      ) : (
+        <ScrollView style={styles.medicationList} showsVerticalScrollIndicator={false}>
+          <Text style={styles.title}>Select Medication to Modify</Text>
+          <Text style={styles.subtitle}>Choose which medication schedule you want to change</Text>
+          {medications.map((medication) => (
+            <Pressable
+              key={medication._id}
+              style={styles.medicationCard}
+              onPress={() => handleMedicationSelect(medication)}
+            >
+              {renderMedicationIcon(medication.type)}
+              <View style={styles.medicationInfo}>
+                <Text style={styles.medicationName}>{medication.name}</Text>
+                <Text style={styles.medicationDetails}>
+                  {medication.dosage} {medication.unit} • {medication.type}
+                </Text>
+                <Text style={styles.currentSchedule}>
+                  {medication.selectedDoseTimes?.length || 0} doses per day
+                </Text>
+              </View>
+              <AntDesign name="right" size={20} color="#7313B2" />
+            </Pressable>
+          ))}
+        </ScrollView>
+      )}
     </View>
   );
 
@@ -325,6 +340,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     marginBottom: 30,
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  emptyStateTitle: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#333',
+    textAlign: 'center',
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  emptyStateSubtitle: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 22,
   },
   medicationList: {
     flex: 1,

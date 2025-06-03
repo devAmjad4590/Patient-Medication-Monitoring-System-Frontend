@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, SectionList, RefreshControl, Alert, Platform } 
 import CalendarStrip from "react-native-calendar-strip";
 import moment from "moment";
 import { StatusBar } from "expo-status-bar";
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import MedicationEntryCard from "../components/MedicationEntryCard";
 import { groupLogsByTime, getSortedSections } from "../utils/medicationUtils";
 import { getMedicationLogs, markMedicationTaken } from "../api/patientAPI";
@@ -114,6 +115,25 @@ function HomeScreen() {
     }
   }
 
+  // No medications empty state component
+  const EmptyState = () => (
+    <View style={styles.emptyStateContainer}>
+      <Icon name="pill" size={80} color="#ccc" />
+      <Text style={styles.emptyStateTitle}>
+        {selectedDate === moment().format("YYYY-MM-DD") 
+          ? "No medications for today" 
+          : `No medications for ${moment(selectedDate).format("MMM DD, YYYY")}`
+        }
+      </Text>
+      <Text style={styles.emptyStateSubtitle}>
+        {selectedDate === moment().format("YYYY-MM-DD")
+          ? "Enjoy your medication-free day!"
+          : "Try selecting a different date"
+        }
+      </Text>
+    </View>
+  );
+
   return (
     <>
       <StatusBar style="dark" />
@@ -142,31 +162,35 @@ function HomeScreen() {
       />
 
       <View style={styles.root}>
-        <SectionList
-          sections={sections}
-          keyExtractor={(item) => item._id}
-          style={{ paddingHorizontal: 23 }}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor="#2F7EF5"
-              colors={["#2F7EF5"]}
-            />
-          }
-          renderSectionHeader={({ section: { title } }) => (
-            <Text style={styles.header}>{title}</Text>
-          )}
-          renderItem={({ item }) => (
-            <MedicationEntryCard
-              id={item._id}
-              medicationName={item.medication.name}
-              medicationType={item.medication.type}
-              onCheck={onCheck}
-              status={item.status}
-            />
-          )}
-        />
+        {sections.length === 0 && !loading ? (
+          <EmptyState />
+        ) : (
+          <SectionList
+            sections={sections}
+            keyExtractor={(item) => item._id}
+            style={{ paddingHorizontal: 23 }}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor="#2F7EF5"
+                colors={["#2F7EF5"]}
+              />
+            }
+            renderSectionHeader={({ section: { title } }) => (
+              <Text style={styles.header}>{title}</Text>
+            )}
+            renderItem={({ item }) => (
+              <MedicationEntryCard
+                id={item._id}
+                medicationName={item.medication.name}
+                medicationType={item.medication.type}
+                onCheck={onCheck}
+                status={item.status}
+              />
+            )}
+          />
+        )}
       </View>
     </>
   );
@@ -181,6 +205,26 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     marginVertical: 10,
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  emptyStateTitle: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#333',
+    textAlign: 'center',
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  emptyStateSubtitle: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 22,
   },
 });
 

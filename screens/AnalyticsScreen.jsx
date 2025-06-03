@@ -519,17 +519,28 @@ function AnalyticsScreen() {
       return data.value ? [data.value] : [];
     }
 
-    // Filter out zero values but keep the structure for proper alignment
-    return data.map(item => {
+    // Check if array is empty or has no valid values
+    if (data.length === 0) {
+      return [];
+    }
+
+    // Check if all values are null/undefined/0
+    const hasValidData = data.some(item => item.value && item.value !== 0);
+    if (!hasValidData) {
+      return [];
+    }
+
+    // Create segments of consecutive actual values with line breaks
+    const chartData = data.map(item => {
       // If value is 0 or null, return null (this creates gaps in the chart)
       if (item.value === 0 || item.value === null || item.value === undefined) {
-        return 38;
+        return null;
       }
       return item.value;
-    }).filter((value, index, array) => {
-      // Keep null values for proper spacing, but remove trailing nulls
-      return value !== null || index < array.length - 1;
     });
+
+    console.log('Chart data with line breaks:', chartData);
+    return chartData;
   };
 
   const handleSelect = (selectedItem) => {
