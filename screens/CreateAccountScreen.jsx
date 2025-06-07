@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     width: '80%',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     marginBottom: 50,
   },
   blueText: {

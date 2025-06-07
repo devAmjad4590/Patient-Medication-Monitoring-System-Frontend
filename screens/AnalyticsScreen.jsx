@@ -735,7 +735,7 @@ function AnalyticsScreen() {
               <View style={styles.missedDosesCircle}>
                 <Text style={styles.metricNumber}>{missedDoses}</Text>
               </View>
-              <Text style={styles.metricLabel}>Missed doses this week</Text>
+              <Text style={styles.metricLabel}>Missed doses this {selectedTimeframe}</Text>
             </View>
           </ChartCard>
 

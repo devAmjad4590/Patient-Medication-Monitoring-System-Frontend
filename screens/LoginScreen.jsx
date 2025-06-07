@@ -93,11 +93,12 @@ const styles = StyleSheet.create({
   },
   footer: {
     width: '80%',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     marginBottom: 50,
   },
   blueText: {
     color: '#2F7EF5',
+
   },
   bottomHalf: {
     flex: 2.3,

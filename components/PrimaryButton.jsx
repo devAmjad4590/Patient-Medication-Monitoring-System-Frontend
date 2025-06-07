@@ -2,13 +2,15 @@ import React from 'react';
 import { Text, Pressable, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-function PrimaryButton({ children, onPress }) {
+function PrimaryButton({ children, onPress, disabled }) {
   return (
     <Pressable
+    disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
         styles.buttonOuterContainer,
         pressed && styles.pressed,
+        disabled && styles.disabled
       ]}
     >
       <LinearGradient
@@ -44,6 +46,9 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.75,
+  },
+  disabled: {
+    opacity: 0.5, // Add this style
   },
 });
 

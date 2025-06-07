@@ -24,8 +24,16 @@ function AppointmentScreen() {
     try{
       const upcoming = await getUpcomingAppointments();
       const past = await getPastAppointments();
+      
       setUpcomingAppointments(upcoming);
-      setPastAppointments(past);
+
+       // Sort past appointments by date (latest to oldest)
+      const sortedPast = past.sort((a, b) => {
+        return new Date(b.appointmentDateTime) - new Date(a.appointmentDateTime);
+      });
+      
+      setPastAppointments(sortedPast);
+
     }
     catch(err){
       console.error('Error fetching appointments:', err);
