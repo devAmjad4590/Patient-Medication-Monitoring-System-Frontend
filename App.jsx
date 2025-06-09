@@ -23,6 +23,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import AnalyticsScreen from './screens/AnalyticsScreen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NotificationProvider } from './NotificationContext';
+import { VoiceProvider } from './VoiceContext'; // Add this import
 
 
 // Set up notifications configuration
@@ -109,29 +110,31 @@ export default function App() {
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style="dark" />
         <NotificationProvider>
-        <NavigationContainer ref={navigationRef}>
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="Welcome" component={WelcomeScreen} />
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="CreateAccount" component={CreateAccountScreen} />
-            <Stack.Screen name="Drawer" component={NotificationDrawer} />
-            <Stack.Screen name="Medication" component={MedicationScreen} />
-            <Stack.Screen
-              name="MedicationDetail"
-              component={MedicationDetailScreen}
-              options={{ headerShown: true, title: "Medication Detail" }}
-            />
-            <Stack.Screen
-              name="Restock"
-              component={RestockScreen}
-              options={{ headerShown: true, title: "Medication Title" }}
-            />
-            <Stack.Screen
-              name="Reminder"
-              component={ReminderScreen}
-            />
-          </Stack.Navigator>
-        </NavigationContainer>
+          <VoiceProvider>
+            <NavigationContainer ref={navigationRef}>
+              <Stack.Navigator screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="Welcome" component={WelcomeScreen} />
+                <Stack.Screen name="Login" component={LoginScreen} />
+                <Stack.Screen name="CreateAccount" component={CreateAccountScreen} />
+                <Stack.Screen name="Drawer" component={NotificationDrawer} />
+                <Stack.Screen name="Medication" component={MedicationScreen} />
+                <Stack.Screen
+                  name="MedicationDetail"
+                  component={MedicationDetailScreen}
+                  options={{ headerShown: true, title: "Medication Detail" }}
+                />
+                <Stack.Screen
+                  name="Restock"
+                  component={RestockScreen}
+                  options={{ headerShown: true, title: "Medication Title" }}
+                />
+                <Stack.Screen
+                  name="Reminder"
+                  component={ReminderScreen}
+                />
+              </Stack.Navigator>
+            </NavigationContainer>
+          </VoiceProvider>
         </NotificationProvider>
         {/* <AnalyticsScreen></AnalyticsScreen> */}
 
