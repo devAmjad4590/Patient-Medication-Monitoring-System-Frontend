@@ -80,8 +80,8 @@ function VoiceSettingsScreen() {
               title="Medication Tracking"
               description="Mark medications as taken, missed, or pending"
               examples={[
-                "I took my lisinopril this morning",
-                "Mark my metformin as missed yesterday"
+                "I took my lisinopril at 8am",
+                "Mark my metformin as missed yesterday at 2pm"
               ]}
             />
             
@@ -100,8 +100,8 @@ function VoiceSettingsScreen() {
               title="Appointments"
               description="Check upcoming and past appointments"
               examples={[
-                "What are my appointments today?",
-                "Show me my upcoming appointments"
+                "What is my next upcoming appointment today?",
+                "Show me my recent appointment"
               ]}
             />
             
