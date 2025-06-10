@@ -5,6 +5,7 @@ import moment from "moment";
 import { StatusBar } from "expo-status-bar";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import MedicationEntryCard from "../components/MedicationEntryCard";
+import LoadingScreen from "../components/LoadingScreen"; // Add this import
 import { groupLogsByTime, getSortedSections } from "../utils/medicationUtils";
 import { getMedicationLogs, markMedicationTaken } from "../api/patientAPI";
 import { useFocusEffect } from "@react-navigation/native";
@@ -69,15 +70,6 @@ function HomeScreen() {
     configurePushNotifications();
   }, []);
 
-  // // Refetch data when screen comes into focus
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     if (!loading) {
-  //       loadLogs();
-  //     }
-  //   }, [loadLogs, loading])
-  // );
-
   // Pull-to-refresh function
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -133,6 +125,18 @@ function HomeScreen() {
       </Text>
     </View>
   );
+
+  // SHOW LOADING SCREEN
+  if (loading) {
+    return (
+      <LoadingScreen 
+        message="Loading your medications..." 
+        icon="medication"
+        backgroundColor="#E7E7E7"
+        primaryColor="#2F7EF5"
+      />
+    );
+  }
 
   return (
     <>

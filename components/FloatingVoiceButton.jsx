@@ -5,14 +5,22 @@ import { useVoice } from '../VoiceContext';
 import VoiceCommandModal from './VoiceCommandModal';
 
 const FloatingVoiceButton = () => {
-  const { isVoiceEnabled } = useVoice();
+  const { isVoiceEnabled, isLoading } = useVoice();
   const [modalVisible, setModalVisible] = useState(false);
 
-  if (!isVoiceEnabled) {
+  // Show button while loading or when voice is enabled
+  // Only hide when explicitly disabled and not loading
+  if (!isLoading && !isVoiceEnabled) {
     return null;
   }
 
   const handlePress = () => {
+    // Don't open modal if still loading
+    if (isLoading) {
+      console.log('Voice settings still loading...');
+      return;
+    }
+    
     setModalVisible(true);
   };
 
@@ -24,11 +32,16 @@ const FloatingVoiceButton = () => {
     <>
       <View style={styles.container}>
         <TouchableOpacity
-          style={styles.button}
+          style={[styles.button, isLoading && styles.loadingButton]}
           onPress={handlePress}
           activeOpacity={0.8}
+          disabled={isLoading}
         >
-          <MaterialIcons name="mic" size={28} color="white" />
+          <MaterialIcons 
+            name="mic" 
+            size={28} 
+            color={isLoading ? "#ccc" : "white"} 
+          />
         </TouchableOpacity>
       </View>
 
@@ -43,11 +56,11 @@ const FloatingVoiceButton = () => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-  bottom: 70, // Above the tab bar
-  alignSelf: 'center',
-  left: '50%',
-  marginLeft: -28, // Half of button width (56/2)
-  zIndex: 1000,
+    bottom: 70, // Above the tab bar
+    alignSelf: 'center',
+    left: '50%',
+    marginLeft: -28, // Half of button width (56/2)
+    zIndex: 1000,
   },
   button: {
     width: 56,
@@ -64,6 +77,9 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.3,
     shadowRadius: 4.65,
+  },
+  loadingButton: {
+    backgroundColor: '#888',
   },
 });
 

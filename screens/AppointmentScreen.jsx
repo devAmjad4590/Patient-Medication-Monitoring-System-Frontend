@@ -2,8 +2,9 @@ import React, {useEffect, useState} from 'react'
 import { View, StyleSheet, FlatList, RefreshControl, Text}from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AppointmentCard from '../components/AppointmentCard'
+import LoadingScreen from '../components/LoadingScreen'; // Add this import
+import CustomSegmentedControl from '../components/CustomSegmentedControl';
 import {getPastAppointments, getUpcomingAppointments} from '../api/patientAPI'
-import SegmentedControl from 'react-native-ui-lib/segmentedControl';
 
 function AppointmentScreen() {
   const [selectedIndex, setSelectedIndex] = React.useState(0);
@@ -65,23 +66,27 @@ function AppointmentScreen() {
   const currentData = selectedIndex === 0 ? upcomingAppointments : pastAppointments;
   const isEmpty = currentData.length === 0;
 
+  // SHOW LOADING SCREEN
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading appointments...</Text>
-      </View>
+      <LoadingScreen 
+        message="Loading your appointments..." 
+        icon="calendar-today"
+        backgroundColor="#f5f5f5"
+        primaryColor="#2F7EF5"
+      />
     );
   }
 
   return (
     <View style={styles.root}>
-      <SegmentedControl
+      <CustomSegmentedControl
         segments={[
           { label: 'Upcoming' },
           { label: 'Past' },
         ]}
-        onChangeIndex={setSelectedIndex}
         selectedIndex={selectedIndex}
+        onChangeIndex={setSelectedIndex}
         containerStyle={{
           backgroundColor: '#D9D9D9',
           borderRadius: 30,
@@ -94,7 +99,12 @@ function AppointmentScreen() {
         inactiveTextColor="black"
         activeTextColor="black"
         backgroundColor='#CFCFCF'
-        style={{ fontSize: 15, fontWeight: '500', height: 50, borderRadius: 20, }}
+        style={{ 
+          fontSize: 15, 
+          fontWeight: '500', 
+          height: 50, 
+          borderRadius: 20,
+        }}
       />
 
       {isEmpty ? (
@@ -131,15 +141,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     padding: 28,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 16,
-    color: '#666',
   },
   emptyStateContainer: {
     flex: 1,

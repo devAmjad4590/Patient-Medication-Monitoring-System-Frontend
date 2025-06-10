@@ -9,7 +9,6 @@ import VoiceSettingsScreen from '../../screens/VoiceSettingsScreen';
 import { MaterialIcons } from '@expo/vector-icons'
 import { logout } from '../../api/authAPI';
 import { useNotifications } from '../../NotificationContext'; // Import the context
-import FloatingVoiceButton from '../FloatingVoiceButton'; // Add this import
 
 const Drawer = createDrawerNavigator();
 
@@ -131,8 +130,6 @@ function PrimaryDrawer({ navigation }) {
         </Drawer.Screen>
       </Drawer.Navigator>
       
-      {/* Floating Voice Button - appears on drawer screens too */}
-      {/* <FloatingVoiceButton /> */}
     </View>
   );
 }

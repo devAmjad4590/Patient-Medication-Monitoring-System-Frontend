@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const VoiceContext = createContext();
@@ -41,6 +41,11 @@ export const VoiceProvider = ({ children }) => {
       console.error('Error saving voice settings:', error);
     }
   }, []);
+
+  // AUTO-LOAD SETTINGS ON COMPONENT MOUNT
+  useEffect(() => {
+    loadVoiceSettings();
+  }, [loadVoiceSettings]);
 
   const value = {
     isVoiceEnabled,

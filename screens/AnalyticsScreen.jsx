@@ -5,6 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import PrimaryButton from '../components/PrimaryButton';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ChartCard from '../components/ChartCard';
+import LoadingScreen from '../components/LoadingScreen'; // Add this import
 import * as Progress from 'react-native-progress';
 import MetricGraphCard from '../components/MetricGraphCard';
 import TodayMetricCard from '../components/TodayMetricCard';
@@ -136,7 +137,9 @@ function AnalyticsScreen() {
     }
   }
 
-  // PDF Generation Functions
+  // PDF Generation Functions and other helper functions remain the same...
+  // [All the existing helper functions like generateHealthReportHTML, getTimeframeName, generatePDFReport, etc.]
+
   const generateHealthReportHTML = (metricsData, medicationData) => {
     const currentDate = new Date().toLocaleDateString();
     const timeframeName = getTimeframeName(selectedTimeframe);
@@ -559,16 +562,22 @@ function AnalyticsScreen() {
     return `${Math.round(progress * 100)}%`;
   };
 
+  // SHOW LOADING SCREEN
   if (loading) {
     return (
-      <View style={[styles.root, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ fontSize: 20, textAlign: 'center', marginTop: 20 }}>Loading Data...</Text>
-      </View>
+      <LoadingScreen 
+        message="Loading your analytics..." 
+        icon="analytics"
+        backgroundColor="#E7E7E7"
+        primaryColor="#2F7EF5"
+      />
     );
   }
 
   return (
     <View style={styles.root}>
+      {/* All the existing modal and content code remains exactly the same... */}
+      
       <Modal
         visible={isModalVisible}
         animationType='slide'
@@ -701,6 +710,7 @@ function AnalyticsScreen() {
           </View>
         </View>
         <View style={styles.content}>
+          {/* All existing content remains the same... */}
           {/* Adherence Summary Card */}
           <ChartCard title='Adherence Summary'>
             <View style={{ alignSelf: 'flex-start', marginTop: 20, flex: 1 }}>
@@ -834,7 +844,7 @@ function AnalyticsScreen() {
   );
 }
 
-// Helper functions
+// Helper functions remain the same...
 const getPlaceholder = (metricId) => {
   switch (metricId) {
     case 'bloodGlucose': return '100';
@@ -872,7 +882,7 @@ const styles = StyleSheet.create({
     marginTop: 0,
     backgroundColor: '#E7E7E7'
   },
-  // Modal Styles
+  // All existing modal and other styles remain the same...
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',

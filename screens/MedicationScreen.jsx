@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import LoadingScreen from '../components/LoadingScreen'; // Add this import
 
 import InventoryCard from '../components/InventoryCard';
 import { getPatientMedication } from '../api/patientAPI';
@@ -59,11 +60,15 @@ export default function MedicationScreen({ navigation }) {
     </View>
   );
 
+  // SHOW LOADING SCREEN
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading medications...</Text>
-      </View>
+      <LoadingScreen 
+        message="Loading your medication inventory..." 
+        icon="medical-services"
+        backgroundColor="#f5f5f5"
+        primaryColor="#2F7EF5"
+      />
     );
   }
 
@@ -106,15 +111,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 30,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 16,
-    color: '#666',
   },
   emptyStateContainer: {
     flex: 1,
