@@ -14,6 +14,7 @@ import { getPatientMetrics, getPatientAdherence, getMissedDoses, getPatientStrea
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
+import { useScreenRefresh } from '../ScreenRefreshContext';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -29,6 +30,7 @@ function AnalyticsScreen() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentMetric, setCurrentMetric] = useState(null);
   const [generatingPDF, setGeneratingPDF] = useState(false);
+  const { refreshTrigger } = useScreenRefresh();
 
   // Input states
   const [singleValue, setSingleValue] = useState('');
@@ -98,6 +100,14 @@ function AnalyticsScreen() {
     }, [fetchMetrics])
   );
 
+  // Listen for refresh trigger from ScreenRefreshContext
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      console.log('🔄 AnalyticsScreen: Refresh triggered, reloading data...');
+      fetchMetrics();
+    }
+  }, [refreshTrigger, fetchMetrics]);
+
   // Pull to refresh function
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -105,6 +115,7 @@ function AnalyticsScreen() {
     setRefreshing(false);
   }, [fetchMetrics]);
 
+  // ...existing code remains the same...
   const refreshData = async () => {
     setLoading(true);
     setLabels(getLabels(selectedTimeframe));
@@ -137,9 +148,7 @@ function AnalyticsScreen() {
     }
   }
 
-  // PDF Generation Functions and other helper functions remain the same...
-  // [All the existing helper functions like generateHealthReportHTML, getTimeframeName, generatePDFReport, etc.]
-
+  // ...all existing helper functions remain exactly the same...
   const generateHealthReportHTML = (metricsData, medicationData) => {
     const currentDate = new Date().toLocaleDateString();
     const timeframeName = getTimeframeName(selectedTimeframe);
@@ -574,10 +583,9 @@ function AnalyticsScreen() {
     );
   }
 
+  // ...rest of the component remains exactly the same...
   return (
     <View style={styles.root}>
-      {/* All the existing modal and content code remains exactly the same... */}
-      
       <Modal
         visible={isModalVisible}
         animationType='slide'
@@ -613,6 +621,7 @@ function AnalyticsScreen() {
                         onChangeText={(value) => handleInputChange(value, 'systolic')}
                         placeholder="120"
                         keyboardType="numeric"
+                        placeholderTextColor='gray'
                         maxLength={3}
                       />
                       <Text style={styles.unitText}>mmHg</Text>
@@ -628,6 +637,7 @@ function AnalyticsScreen() {
                         onChangeText={(value) => handleInputChange(value, 'diastolic')}
                         placeholder="80"
                         keyboardType="numeric"
+                        placeholderTextColor='gray'
                         maxLength={3}
                       />
                       <Text style={styles.unitText}>mmHg</Text>
@@ -652,6 +662,7 @@ function AnalyticsScreen() {
                       onChangeText={(value) => handleInputChange(value)}
                       placeholder={getPlaceholder(currentMetric?.id)}
                       keyboardType="numeric"
+                      placeholderTextColor='gray'
                       maxLength={6}
                     />
                     <Text style={styles.unitText}>{currentMetric?.unit}</Text>
@@ -710,7 +721,6 @@ function AnalyticsScreen() {
           </View>
         </View>
         <View style={styles.content}>
-          {/* All existing content remains the same... */}
           {/* Adherence Summary Card */}
           <ChartCard title='Adherence Summary'>
             <View style={{ alignSelf: 'flex-start', marginTop: 20, flex: 1 }}>
@@ -730,11 +740,11 @@ function AnalyticsScreen() {
             <View style={{ flexDirection: 'column', padding: 20, paddingHorizontal: 0, width: '100%', gap: 10 }}>
               <View style={{ flexDirection: 'row', gap: 10, justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
                 <View style={{ borderRadius: 50, backgroundColor: '#5A6ACF', width: 10, height: 10 }}></View>
-                <Text style={{ textAlign: 'left', width: '30%' }}>Adherent</Text>
+                <Text style={{ textAlign: 'left', width: '30%', color: 'black' }}>Adherent</Text>
               </View>
               <View style={{ flexDirection: 'row', gap: 10, justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
                 <View style={{ borderRadius: 50, backgroundColor: '#C7CEFF', width: 10, height: 10 }}></View>
-                <Text style={{ textAlign: 'left', width: '30%' }}>Non-Adherent</Text>
+                <Text style={{ textAlign: 'left', width: '30%', color: 'black' }}>Non-Adherent</Text>
               </View>
             </View>
           </ChartCard>
@@ -882,7 +892,6 @@ const styles = StyleSheet.create({
     marginTop: 0,
     backgroundColor: '#E7E7E7'
   },
-  // All existing modal and other styles remain the same...
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -1024,7 +1033,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: 'white',
   },
-  // Existing styles for the main screen
   metricContainer: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -1048,6 +1056,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     marginTop: 5,
+    color: 'black'
   },
   metricTrend: {
     fontSize: 14,

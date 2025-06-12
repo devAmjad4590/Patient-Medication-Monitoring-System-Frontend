@@ -1,49 +1,61 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import LoadingScreen from '../components/LoadingScreen'; // Add this import
-
+import LoadingScreen from '../components/LoadingScreen';
 import InventoryCard from '../components/InventoryCard';
 import { getPatientMedication } from '../api/patientAPI';
+import { useScreenRefresh } from '../ScreenRefreshContext';
 
 export default function MedicationScreen({ navigation }) {
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { refreshTrigger } = useScreenRefresh();
+
+  // Function to load medications from API
+  const fetchMedications = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await getPatientMedication();
+      // Remove duplicates by id
+      const medMap = Array.from(
+        new Map(res.map(med => [med._id, med])).values()
+      );
+      setInventory(medMap);
+    } catch (err) {
+      console.error('Error fetching medication:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   // Fetch (and dedupe) every time this screen gains focus
   useFocusEffect(
     useCallback(() => {
       let isActive = true;
 
-      const fetchMedications = async () => {
-        setLoading(true);
-        try {
-          const res = await getPatientMedication();
-          if (isActive) {
-            // Remove duplicates by id
-            const medMap = Array.from(
-              new Map(res.map(med => [med._id, med])).values()
-            );
-            setInventory(medMap);
-          }
-        } catch (err) {
-          console.error('Error fetching medication:', err);
-        } finally {
-          if (isActive) {
-            setLoading(false);
-          }
-        }
+      const loadData = async () => {
+        await fetchMedications();
       };
 
-      fetchMedications();
+      if (isActive) {
+        loadData();
+      }
 
       // Cleanup if the screen blurs before fetch finishes
       return () => {
         isActive = false;
       };
-    }, [])
+    }, [fetchMedications])
   );
+
+  // Listen for refresh trigger from ScreenRefreshContext
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      console.log('🔄 MedicationScreen: Refresh triggered, reloading data...');
+      fetchMedications();
+    }
+  }, [refreshTrigger, fetchMedications]);
 
   function handlePress(id) {
     navigation.navigate('MedicationDetail', { id });
@@ -105,6 +117,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     marginBottom: 20,
+    color: 'black'
   },
   scrollView: {
     flex: 1,

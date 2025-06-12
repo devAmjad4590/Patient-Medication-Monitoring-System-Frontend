@@ -86,7 +86,7 @@ function CreateAccountScreen() {
           <InputField onChange={passwordTextHandler} isPassword={true} placeholder={"Password"}></InputField>
           <View style={styles.footer}>
               <Pressable onPress={loginHandler}>
-            <Text>Already have an account?
+            <Text style={{color:'black'}}>Already have an account?
                 <Text style={styles.blueText}> Login</Text>
             </Text>
               </Pressable>
@@ -143,6 +143,7 @@ const styles = StyleSheet.create({
     fontSize: 30,
     marginVertical: 20,
     marginBottom: 40,
+    color: 'black'
   }
 })
 

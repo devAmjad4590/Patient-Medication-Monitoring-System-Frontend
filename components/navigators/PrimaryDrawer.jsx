@@ -8,17 +8,34 @@ import PrimaryDrawerContent from './PrimaryDrawerContent';
 import VoiceSettingsScreen from '../../screens/VoiceSettingsScreen';
 import { MaterialIcons } from '@expo/vector-icons'
 import { logout } from '../../api/authAPI';
-import { useNotifications } from '../../NotificationContext'; // Import the context
+import { useNotifications } from '../../NotificationContext';
+import { useAuth } from '../../AuthContext'; // Import useAuth
 
 const Drawer = createDrawerNavigator();
 
 function PrimaryDrawer({ navigation }) {
-  const { loadNotifications } = useNotifications(); // Get the refresh function
+  const { loadNotifications } = useNotifications();
+  const { logout: logoutContext } = useAuth(); // Get logout from AuthContext
 
   const handleNotificationPress = async () => {
     // Refresh notifications before opening the drawer
     await loadNotifications();
     navigation.getParent('RightDrawer')?.openDrawer();
+  };
+
+  const handleLogout = async () => {
+    try {
+      // Call API logout
+      await logout();
+      // Call AuthContext logout to update app state
+      logoutContext();
+      // No need to navigate - the App.jsx will automatically show login screen
+      // when isAuthenticated becomes false
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Even if API fails, we should still log out locally
+      logoutContext();
+    }
   };
 
   return (
@@ -118,11 +135,7 @@ function PrimaryDrawer({ navigation }) {
           listeners={({ navigation }) => ({
             drawerItemPress: async (e) => {
               e.preventDefault();
-              await logout()
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'Login' }],
-              });
+              await handleLogout();
             },
           })}
         >

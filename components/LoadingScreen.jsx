@@ -193,6 +193,7 @@ const styles = StyleSheet.create({
     marginTop: 30,
     marginBottom: 20,
     textAlign: 'center',
+    color: 'black'
   },
   dotsContainer: {
     flexDirection: 'row',

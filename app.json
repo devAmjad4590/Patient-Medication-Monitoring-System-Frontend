@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -20,13 +20,9 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-
-      "extraMavenRepos": [
-        "../../node_modules/@notifee/react-native/android/libs"
-      ],
-      "useNextNotificationsApi": true,
       "permissions": ["NOTIFICATIONS"],
-      "package": "com.anonymous.PMMS"
+      "package": "com.anonymous.PMMS",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"

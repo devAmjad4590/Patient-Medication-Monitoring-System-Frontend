@@ -29,7 +29,7 @@ function InventoryCard({medicationName, medicationType, stock, onPress}) {
         <Text style={styles.medicationName}>{medicationName}</Text>
         <Text style={styles.caption}>{medicationType}</Text>
       </View>
-      <Text>{stock} left</Text>
+      <Text style={{color: 'black'}}>{stock} left</Text>
     </Pressable>
   )
 }
@@ -56,6 +56,7 @@ const styles = StyleSheet.create({
     medicationName: {
         fontSize: 17,
         fontWeight: '600',
+        color: 'black'
     },
     caption: {
         fontSize: 13,

@@ -36,7 +36,8 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 16,
     textAlign: 'left',
-    width: '100%'
+    width: '100%',
+    color: 'black'
   }
 
 })

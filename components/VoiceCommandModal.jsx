@@ -13,6 +13,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import * as Speech from 'expo-speech';
 import { handleVoiceCommand } from '../api/voiceAPI';
+import { useNavigation } from '@react-navigation/native';
+import { useScreenRefresh } from '../ScreenRefreshContext';
 
 const VoiceCommandModal = ({ visible, onClose }) => {
   const [recording, setRecording] = useState(null);
@@ -20,6 +22,8 @@ const VoiceCommandModal = ({ visible, onClose }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [pulseAnim] = useState(new Animated.Value(1));
+  const navigation = useNavigation();
+  const { triggerAllScreensRefresh } = useScreenRefresh();
 
   useEffect(() => {
     let interval;
@@ -145,7 +149,17 @@ const VoiceCommandModal = ({ visible, onClose }) => {
         Alert.alert(
           'Success',
           messageToSpeak,
-          [{ text: 'OK', onPress: onClose }]
+          [{ 
+            text: 'OK', 
+            onPress: () => {
+              onClose();
+              // Trigger refresh for all screens after successful voice command
+              console.log('🔄 Triggering screen refresh after successful voice command');
+              setTimeout(() => {
+                triggerAllScreensRefresh();
+              }, 100);
+            }
+          }]
         );
       } else {
         Alert.alert(
@@ -267,7 +281,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    
   },
   modalContainer: {
     backgroundColor: 'white',

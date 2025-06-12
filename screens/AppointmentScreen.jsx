@@ -1,10 +1,11 @@
-import React, {useEffect, useState} from 'react'
-import { View, StyleSheet, FlatList, RefreshControl, Text}from 'react-native'
+import React, {useEffect, useState, useCallback} from 'react'
+import { View, StyleSheet, FlatList, RefreshControl, Text, ScrollView}from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AppointmentCard from '../components/AppointmentCard'
-import LoadingScreen from '../components/LoadingScreen'; // Add this import
+import LoadingScreen from '../components/LoadingScreen';
 import CustomSegmentedControl from '../components/CustomSegmentedControl';
 import {getPastAppointments, getUpcomingAppointments} from '../api/patientAPI'
+import { useScreenRefresh } from '../ScreenRefreshContext';
 
 function AppointmentScreen() {
   const [selectedIndex, setSelectedIndex] = React.useState(0);
@@ -12,15 +13,10 @@ function AppointmentScreen() {
   const [pastAppointments, setPastAppointments] = React.useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { refreshTrigger } = useScreenRefresh();
   
-  useEffect(() => {
-    const init = async () => {
-      await fetchAppointments();
-    }
-    init();
-  }, []); // run once on mount
-
-  async function fetchAppointments(){
+  // Function to load appointments from API
+  const fetchAppointments = useCallback(async () => {
     setLoading(true);
     try{
       const upcoming = await getUpcomingAppointments();
@@ -41,7 +37,26 @@ function AppointmentScreen() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    fetchAppointments();
+  }, [fetchAppointments]);
+
+  // Listen for refresh trigger from ScreenRefreshContext
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      console.log('🔄 AppointmentScreen: Refresh triggered, reloading data...');
+      fetchAppointments();
+    }
+  }, [refreshTrigger, fetchAppointments]);
+
+  // Pull-to-refresh function
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchAppointments();
+    setRefreshing(false);
+  }, [fetchAppointments]);
 
   // Empty state component
   const EmptyState = ({ isUpcoming }) => (
@@ -108,18 +123,28 @@ function AppointmentScreen() {
       />
 
       {isEmpty ? (
-        <EmptyState isUpcoming={selectedIndex === 0} />
+        <ScrollView
+          contentContainerStyle={{ flex: 1 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#2F7EF5"
+              colors={["#2F7EF5"]}
+            />
+          }
+        >
+          <EmptyState isUpcoming={selectedIndex === 0} />
+        </ScrollView>
       ) : (
         <FlatList
           data={currentData}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
-              onRefresh={async () => {
-                setRefreshing(true);
-                await fetchAppointments();
-                setRefreshing(false);
-              }}
+              onRefresh={onRefresh}
+              tintColor="#2F7EF5"
+              colors={["#2F7EF5"]}
             />
           }
           keyExtractor={(_, index) => index.toString()}

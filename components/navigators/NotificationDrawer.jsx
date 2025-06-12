@@ -96,7 +96,8 @@ function NotificationDrawer() {
               fontSize: 22,
               fontWeight: '600',
               textAlign: 'center',
-              marginBottom: 20
+              marginBottom: 20,
+              color: 'black'
             }}>
               Notifications
             </Text>
@@ -142,7 +143,8 @@ function NotificationDrawer() {
             alignItems: 'center',
             justifyContent: 'center',
             width: '100%',
-            marginBottom: 20
+            marginBottom: 20,
+            paddingBottom: 20
           }}>
             <View style={{ width: 200, borderRadius: 30 }}>
               <Button

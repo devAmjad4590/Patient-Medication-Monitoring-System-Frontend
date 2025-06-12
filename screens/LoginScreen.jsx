@@ -4,12 +4,15 @@ import { LinearGradient } from 'expo-linear-gradient'
 import SecondaryButton from '../components/SecondaryButton'
 import InputField from '../components/InputField'
 import { useNavigation } from '@react-navigation/native'
-import { getURL, login } from '../api/authAPI'
+import { login } from '../api/authAPI'
+import { useAuth } from '../AuthContext' // Import useAuth
 
 function LoginScreen() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
   const navigation = useNavigation()
+  const { login: setAuthUser } = useAuth() // Get login function from context
 
   function emailTextHandler(text) {
     setEmail(text)
@@ -26,26 +29,33 @@ function LoginScreen() {
       ])
       return
     }
+    
     try{
+      setIsLoading(true)
       const response = await login(email, password)
+      
       if(response.status === 201) {
         console.log('Login successful:', response.data);
-        navigation.navigate('Drawer')
+        
+        // Set user in auth context - this will automatically navigate to authenticated screens
+        setAuthUser(response.data.user)
+        
+        // Note: No need to manually navigate since App.jsx will handle this based on isAuthenticated
       }
     }
     catch (error) {
-      Alert.alert('Invalid Input', 'Please enter a valid email and password.', [
+      console.error('Login error:', error)
+      Alert.alert('Login Failed', 'Please check your email and password.', [
         { text: 'OK', style: 'default' }
       ])
+    } finally {
+      setIsLoading(false)
     }
   }
 
   function signUpHandler() {
     navigation.navigate('CreateAccount')
-    
   }
-
-
 
   return (
       <LinearGradient
@@ -66,21 +76,20 @@ function LoginScreen() {
           <InputField onChange={passwordTextHandler} isPassword={true} placeholder={"Password"}></InputField>
           <View style={styles.footer}>
               <Pressable onPress={signUpHandler}>
-            <Text>New user?
+            <Text style={{color: 'black'}}>New user?
                 <Text style={styles.blueText}> Sign Up</Text>
             </Text>
               </Pressable>
           </View>
-          <SecondaryButton onPress={loginHandler}>Login</SecondaryButton>
-
+          <SecondaryButton onPress={loginHandler} disabled={isLoading}>
+            {isLoading ? 'Logging in...' : 'Login'}
+          </SecondaryButton>
         </View>
       </LinearGradient>
   )
 }
 
 const styles = StyleSheet.create({
-
-
   root: {
     flex: 1,
     backgroundColor: 'red',
@@ -98,7 +107,6 @@ const styles = StyleSheet.create({
   },
   blueText: {
     color: '#2F7EF5',
-
   },
   bottomHalf: {
     flex: 2.3,
@@ -110,7 +118,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 40,
-    fontWeight: 'semi-bold',
+    fontWeight: '600', // Fixed from 'semi-bold'
     bottom: 30,
     color: 'white',
   },
@@ -122,6 +130,7 @@ const styles = StyleSheet.create({
     fontSize: 30,
     marginVertical: 20,
     marginBottom: 40,
+    color: 'black'
   }
 })
 

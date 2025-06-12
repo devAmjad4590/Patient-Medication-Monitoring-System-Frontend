@@ -25,7 +25,8 @@ const styles = StyleSheet.create({
   },
     title: {
     fontWeight: 600,
-    fontSize: 17
+    fontSize: 17,
+    color: 'black'
   },
   caption: {
     fontWeight: 400,

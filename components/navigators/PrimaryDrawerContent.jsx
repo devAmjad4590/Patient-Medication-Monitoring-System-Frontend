@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    flex: 1,
+    flex: 18,
   },
   userContainer: {
     alignItems: 'center',
@@ -75,6 +75,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#ddd',
     backgroundColor: '#f8f8f8',
+    flex: 1
   },
   footerText: {
     fontSize: 12,

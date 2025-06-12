@@ -1,6 +1,6 @@
 import api from "./client";
 
-const FASTAPI_BASE_URL = 'http://10.0.2.2:8000'; // Your FastAPI server URL
+const FASTAPI_BASE_URL = process.env.FASTAPI_BASE_URL; // Your FastAPI server URL
 
 // Process audio file with FastAPI
 export const processVoiceCommand = async (audioUri) => {
@@ -32,8 +32,7 @@ export const processVoiceCommand = async (audioUri) => {
         console.log('FastAPI response:', result);
         return result;
     } catch (error) {
-        console.error('Error processing voice command:', error);
-        throw error;
+        console.log("Error: ",error)
     }
 };
 
@@ -94,7 +93,7 @@ export const handleVoiceCommand = async (audioUri) => {
                          (executionResult.success ? 'Command completed' : 'Command failed')
         };
     } catch (error) {
-        console.error('Error in voice command pipeline:', error);
+        console.log('Error in voice command pipeline:', error);
         
         // Return error with voice message
         return {

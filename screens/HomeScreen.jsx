@@ -1,22 +1,26 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { View, Text, StyleSheet, SectionList, RefreshControl, Alert, Platform } from "react-native";
+import { View, Text, StyleSheet, SectionList, RefreshControl, Alert, Platform, ScrollView } from "react-native";
 import CalendarStrip from "react-native-calendar-strip";
 import moment from "moment";
 import { StatusBar } from "expo-status-bar";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import MedicationEntryCard from "../components/MedicationEntryCard";
-import LoadingScreen from "../components/LoadingScreen"; // Add this import
+import LoadingScreen from "../components/LoadingScreen";
 import { groupLogsByTime, getSortedSections } from "../utils/medicationUtils";
 import { getMedicationLogs, markMedicationTaken } from "../api/patientAPI";
 import { useFocusEffect } from "@react-navigation/native";
 import { registerPushToken } from "../api/notificationAPI";
 import * as Notifications from "expo-notifications";
+import * as Device from "expo-device";
+import Constants from "expo-constants";
+import { useScreenRefresh } from "../ScreenRefreshContext";
 
 function HomeScreen() {
   const [selectedDate, setSelectedDate] = useState(moment().format("YYYY-MM-DD"));
   const [medicationIntakeLogs, setMedicationIntakeLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const { refreshTrigger } = useScreenRefresh();
 
   // Function to load medication logs from API
   const loadLogs = useCallback(async () => {
@@ -36,37 +40,88 @@ function HomeScreen() {
     loadLogs();
   }, [loadLogs]);
 
-  // Push notification setup
+  // Listen for refresh trigger from ScreenRefreshContext
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      console.log('🔄 HomeScreen: Refresh triggered, reloading data...');
+      loadLogs();
+    }
+  }, [refreshTrigger, loadLogs]);
+
+  // Complete push notification setup
   useEffect(() => {
     async function configurePushNotifications() {
-      const { status } = await Notifications.getPermissionsAsync();
-      let finalStatus = status;
-
-      if (finalStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-
-      if (finalStatus !== 'granted') {
-        Alert.alert(
-          'Push Notification Permission',
-          'You need to enable push notifications to receive reminders.',
-          [{ text: 'OK' }]
-        );
-        return;
-      }
-
-      const pushTokenData = await Notifications.getExpoPushTokenAsync();
-      const res = await registerPushToken(pushTokenData.data);
-      console.log('Push token registered:', res);
-
+      let token;
+      
+      console.log('🔔 Setting up notifications...');
+      
       if (Platform.OS === 'android') {
-        Notifications.setNotificationChannelAsync('high', {
+        await Notifications.setNotificationChannelAsync('default', {
+          name: 'default',
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#FF231F7C',
+        });
+        
+        await Notifications.setNotificationChannelAsync('high', {
           name: 'high',
           importance: Notifications.AndroidImportance.HIGH,
         });
+        console.log('✅ Android notification channels created');
+      }
+
+      if (Device.isDevice) {
+        console.log('📱 Running on physical device');
+        
+        const { status: existingStatus } = await Notifications.getPermissionsAsync();
+        console.log('📋 Current permission status:', existingStatus);
+        
+        let finalStatus = existingStatus;
+        if (existingStatus !== 'granted') {
+          console.log('🔄 Requesting notification permissions...');
+          const { status } = await Notifications.requestPermissionsAsync();
+          finalStatus = status;
+          console.log('📝 Permission request result:', status);
+        }
+        
+        if (finalStatus !== 'granted') {
+          console.log('❌ Failed to get push token for push notification!');
+          Alert.alert(
+            'Push Notification Permission',
+            'You need to enable push notifications to receive reminders.',
+            [{ text: 'OK' }]
+          );
+          return;
+        }
+        
+        try {
+          console.log('🎫 Getting Expo push token...');
+          const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
+          console.log('📁 Project ID:', projectId);
+          
+          if (!projectId) {
+            throw new Error('Project ID not found');
+          }
+          
+          token = (await Notifications.getExpoPushTokenAsync({
+            projectId,
+          })).data;
+          
+          console.log('🎉 Expo push token obtained:', token);
+          
+          // Register token with backend
+          const res = await registerPushToken(token);
+          console.log('✅ Push token registered with backend:', res);
+          
+        } catch (error) {
+          console.log('❌ Error getting/registering Expo push token:', error);
+        }
+      } else {
+        console.log('⚠️ Must use physical device for Push Notifications');
+        Alert.alert('Device Required', 'Must use physical device for Push Notifications');
       }
     }
+    
     configurePushNotifications();
   }, []);
 
@@ -167,7 +222,19 @@ function HomeScreen() {
 
       <View style={styles.root}>
         {sections.length === 0 && !loading ? (
-          <EmptyState />
+          <ScrollView
+            contentContainerStyle={{ flex: 1 }}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor="#2F7EF5"
+                colors={["#2F7EF5"]}
+              />
+            }
+          >
+            <EmptyState />
+          </ScrollView>
         ) : (
           <SectionList
             sections={sections}
@@ -209,6 +276,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     marginVertical: 10,
+    color: 'black'
   },
   emptyStateContainer: {
     flex: 1,

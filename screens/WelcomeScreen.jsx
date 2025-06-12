@@ -77,6 +77,7 @@ const styles = StyleSheet.create({
         fontSize: 30,
         marginVertical: 20,
         marginBottom: 40,
+        color: 'black'
     }
 })
 

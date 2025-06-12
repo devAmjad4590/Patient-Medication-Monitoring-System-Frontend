@@ -124,6 +124,7 @@ const styles = StyleSheet.create({
   medicationName: {
     fontSize: 17,
     fontWeight: "600",
+    color: 'black'
   },
   caption: {
     fontSize: 13,
