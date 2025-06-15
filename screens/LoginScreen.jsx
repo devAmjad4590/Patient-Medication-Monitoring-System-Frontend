@@ -44,7 +44,7 @@ function LoginScreen() {
       }
     }
     catch (error) {
-      console.error('Login error:', error)
+      console.log('Login error:', error)
       Alert.alert('Login Failed', 'Please check your email and password.', [
         { text: 'OK', style: 'default' }
       ])
@@ -72,8 +72,8 @@ function LoginScreen() {
         {/* Bottom half */}
         <View style={styles.bottomHalf}>
           <Text style={styles.welcomeText}>Welcome back!</Text>
-          <InputField onChange={emailTextHandler} placeholder={"Email"}></InputField>
-          <InputField onChange={passwordTextHandler} isPassword={true} placeholder={"Password"}></InputField>
+          <InputField onChange={emailTextHandler} placeholder={"Email"} testID="email-input"></InputField>
+          <InputField onChange={passwordTextHandler} isPassword={true} placeholder={"Password"} testID="password-input"></InputField>
           <View style={styles.footer}>
               <Pressable onPress={signUpHandler}>
             <Text style={{color: 'black'}}>New user?

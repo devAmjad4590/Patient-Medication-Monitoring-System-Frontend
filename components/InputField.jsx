@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { TextField } from 'react-native-ui-lib'
 import { StyleSheet } from 'react-native'
 
-function InputField({ placeholder, isPassword, onChange }) {
+function InputField({ placeholder, isPassword, onChange, testID }) {
     function onChangeText(text){
         onChange(text)
     }
@@ -16,6 +16,7 @@ function InputField({ placeholder, isPassword, onChange }) {
             floatingPlaceholderColor={{focus: 'black', blur: 'grey'}}
             style={styles.fieldStyle}
             onChangeText={onChangeText}
+            testID={testID}
         />
     )
 }

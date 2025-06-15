@@ -18,16 +18,16 @@ export default function MedicationEntryCard({
   status,    // "Pending" | "Taken" | "Missed"
   onCheck,   // (id: string, newStatus: string) => void
 }) {
-  const isTaken  = status === "Taken";
+  const isTaken = status === "Taken";
   const isMissed = status === "Missed";
 
   // Define your cycle of states
   const getNextStatus = (cur) => {
     switch (cur) {
-      case "Taken":   return "Pending";
+      case "Taken": return "Pending";
       case "Pending": return "Taken";
-      case "Missed":  return "Taken";
-      default:        return "Pending";
+      case "Missed": return "Taken";
+      default: return "Pending";
     }
   };
 
@@ -40,23 +40,23 @@ export default function MedicationEntryCard({
         "Confirm Medication Status",
         `Are you sure you want to mark "${medicationName}" as missed?`,
         [
-            { text: "Yes",   onPress: () => onCheck(id, next) },
-            { text: "Cancel", style: "cancel" }
+          { text: "Yes", onPress: () => onCheck(id, next) },
+          { text: "Cancel", style: "cancel" }
         ]
       );
 
-    // Confirm Missed→Taken
+      // Confirm Missed→Taken
     } else if (status === "Missed" && next === "Taken") {
       Alert.alert(
         "Confirm Medication Status",
         `Are you sure you took "${medicationName}"?`,
         [
-            { text: "Yes",   onPress: () => onCheck(id, next) },
+          { text: "Yes", onPress: () => onCheck(id, next) },
           { text: "Cancel", style: "cancel" }
         ]
       );
 
-    // All other transitions (e.g. Pending→Taken) happen immediately
+      // All other transitions (e.g. Pending→Taken) happen immediately
     } else {
       onCheck(id, next);
     }
@@ -69,32 +69,33 @@ export default function MedicationEntryCard({
 
     switch (medicationType?.toLowerCase()) {
       case "tablet":
-        return <FontAwesome5 name="tablets" size={iconSize} color={iconColor} />;
+        return <FontAwesome5 name="tablets" size={iconSize} color={iconColor} testID={`icon-${medicationName}`} />;
       case "syrup":
-        return <MaterialCommunityIcons name="bottle-tonic-plus-outline" size={iconSize} color={iconColor} />;
+        return <MaterialCommunityIcons name="bottle-tonic-plus-outline" size={iconSize} color={iconColor} testID={`icon-${medicationName}`} />;
       case "syringe":
-        return <FontAwesome5 name="syringe" size={iconSize} color={iconColor} />;
+        return <FontAwesome5 name="syringe" size={iconSize} color={iconColor} testID={`icon-${medicationName}`} />;
       case "capsule":
       default:
-        return <MaterialCommunityIcons name="pill" size={iconSize} color={iconColor} />;
+        return <MaterialCommunityIcons name="pill" size={iconSize} color={iconColor} testID={`icon-${medicationName}`} />;
     }
   };
 
   return (
-    <Pressable onPress={handlePress} style={styles.outerContainer}>
+    <Pressable onPress={handlePress} style={styles.outerContainer} testID={`medication-card-${medicationName}`}>
       {renderMedicationIcon()}
       <View style={styles.textContainer}>
-        <Text style={styles.medicationName}>{medicationName}</Text>
-        <Text style={styles.caption}>{medicationType}</Text>
+        <Text testID={`medication-name-${medicationName}`} style={styles.medicationName}>{medicationName}</Text>
+        <Text style={styles.caption} testID={`medication-type-${medicationName}`}>{medicationType}</Text>
       </View>
       {isMissed ? (
-        <Entypo name="circle-with-cross" size={24} color="red" />
+        <Entypo name="circle-with-cross" size={24} color="red" testID={`missed-icon-${medicationName}`} />
       ) : (
         <Checkbox
           size={28}
           borderRadius={20}
           value={isTaken}
           onValueChange={handlePress}
+          testID={`checkbox-${medicationName}`}
         />
       )}
     </Pressable>

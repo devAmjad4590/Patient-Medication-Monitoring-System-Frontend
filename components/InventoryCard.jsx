@@ -11,25 +11,38 @@ function InventoryCard({medicationName, medicationType, stock, onPress}) {
 
     switch (medicationType?.toLowerCase()) {
       case "tablet":
-        return <FontAwesome5 name="tablets" size={iconSize} color={iconColor} />;
+        return <FontAwesome5 name="tablets" size={iconSize} color={iconColor} testID={`icon-${medicationName}`} />;
       case "syrup":
-        return <MaterialCommunityIcons name="bottle-tonic-plus-outline" size={iconSize} color={iconColor} />;
+        return <MaterialCommunityIcons name="bottle-tonic-plus-outline" size={iconSize} color={iconColor} testID={`icon-${medicationName}`} />;
       case "syringe":
-        return <FontAwesome5 name="syringe" size={iconSize} color={iconColor} />;
+        return <FontAwesome5 name="syringe" size={iconSize} color={iconColor} testID={`icon-${medicationName}`} />;
       case "capsule":
       default:
-        return <MaterialCommunityIcons name="pill" size={iconSize} color={iconColor} />;
+        return <MaterialCommunityIcons name="pill" size={iconSize} color={iconColor} testID={`icon-${medicationName}`} />;
     }
   };
 
   return (
-    <Pressable onPress={onPress} style={styles.outerContainer}>
+    <Pressable 
+      onPress={onPress} 
+      style={styles.outerContainer}
+      testID={`inventory-card-${medicationName}`}
+    >
       {renderMedicationIcon()}
       <View style={styles.textContainer}>
-        <Text style={styles.medicationName}>{medicationName}</Text>
-        <Text style={styles.caption}>{medicationType}</Text>
+        <Text style={styles.medicationName} testID={`medication-name-${medicationName}`}>
+          {medicationName}
+        </Text>
+        <Text style={styles.caption} testID={`medication-type-${medicationName}`}>
+          {medicationType}
+        </Text>
       </View>
-      <Text style={{color: 'black'}}>{stock} left</Text>
+      <Text 
+        style={{color: 'black'}} 
+        testID={`stock-count-${medicationName}`}
+      >
+        {stock} left
+      </Text>
     </Pressable>
   )
 }

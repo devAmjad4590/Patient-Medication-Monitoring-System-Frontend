@@ -2,11 +2,12 @@ import React from 'react';
 import { Text, Pressable, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-function PrimaryButton({ children, onPress, disabled }) {
+function PrimaryButton({ children, onPress, disabled, testID }) {
   return (
     <Pressable
-    disabled={disabled}
+      disabled={disabled}
       onPress={onPress}
+      testID={testID || 'primary-button'}
       style={({ pressed }) => [
         styles.buttonOuterContainer,
         pressed && styles.pressed,
@@ -19,7 +20,9 @@ function PrimaryButton({ children, onPress, disabled }) {
         end={{ x: 1, y: 0 }}
         style={styles.buttonInnerContainer}
       >
-        <Text style={styles.buttonText}>{children}</Text>
+        <Text style={styles.buttonText} testID={`${testID || 'primary'}-button-text`}>
+          {children}
+        </Text>
       </LinearGradient>
     </Pressable>
   );

@@ -80,10 +80,10 @@ function CreateAccountScreen() {
         {/* Bottom half */}
         <View style={styles.bottomHalf}>
           <Text style={styles.welcomeText}>Create Your Account</Text>
-          <InputField onChange={fullNameHandler} placeholder={"Full Name"}></InputField>
-          <InputField onChange={emailTextHandler} placeholder={"Email"}></InputField>
-          <InputField onChange={phoneNumberHandler} placeholder={"Phone number"}></InputField>
-          <InputField onChange={passwordTextHandler} isPassword={true} placeholder={"Password"}></InputField>
+          <InputField onChange={fullNameHandler} placeholder={"Full Name"} testID="fullname-input"></InputField>
+          <InputField onChange={emailTextHandler} placeholder={"Email"} testID="email-input"></InputField>
+          <InputField onChange={phoneNumberHandler} placeholder={"Phone number"} testID="phone-input"></InputField>
+          <InputField onChange={passwordTextHandler} isPassword={true} placeholder={"Password"} testID="password-input"></InputField>
           <View style={styles.footer}>
               <Pressable onPress={loginHandler}>
             <Text style={{color:'black'}}>Already have an account?

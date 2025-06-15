@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import LoadingScreen from '../components/LoadingScreen';
 import InventoryCard from '../components/InventoryCard';
 import { getPatientMedication } from '../api/patientAPI';

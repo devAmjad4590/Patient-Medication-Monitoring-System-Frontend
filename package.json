@@ -9,7 +9,15 @@
     "android": "npx expo run:android",
     "web": "npx expo start --web",
     "build:dev": "eas build --platform android --profile development",
-    "build:preview": "eas build --platform android --profile preview"
+    "build:preview": "eas build --platform android --profile preview",
+    "test": "jest"
+  },
+  "jest": {
+    "preset": "jest-expo",
+    "transformIgnorePatterns": [
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|react-native-vector-icons|@expo/vector-icons|expo-notifications|expo-device|expo-constants)"
+    ],
+    "setupFilesAfterEnv": ["@testing-library/jest-native/extend-expect"]
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.2",
@@ -27,6 +35,7 @@
     "expo": "53.0.11",
     "expo-av": "~15.1.6",
     "expo-build-properties": "~0.14.6",
+    "expo-dev-client": "~5.2.0",
     "expo-device": "~7.1.4",
     "expo-file-system": "18.*.*",
     "expo-linear-gradient": "~14.1.5",
@@ -47,14 +56,18 @@
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-select-dropdown": "^4.0.1",
-    "react-native-ui-lib": "^7.39.0",
-    "expo-dev-client": "~5.2.0",
-    "react-native-svg": "15.11.2"
+    "react-native-svg": "15.11.2",
+    "react-native-ui-lib": "^7.39.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@testing-library/jest-native": "^5.4.3",
+    "@testing-library/react-native": "^13.2.0",
     "babel-plugin-module-resolver": "^5.0.2",
-    "react-native-dotenv": "^3.4.11"
+    "jest": "^30.0.0",
+    "jest-expo": "^53.0.7",
+    "react-native-dotenv": "^3.4.11",
+    "react-test-renderer": "^19.0.0"
   },
   "overrides": {
     "react-native-appwrite": {

@@ -1,10 +1,10 @@
-import React, {useEffect, useState, useCallback} from 'react'
-import { View, StyleSheet, FlatList, RefreshControl, Text, ScrollView}from 'react-native'
+import React, { useEffect, useState, useCallback } from 'react'
+import { View, StyleSheet, FlatList, RefreshControl, Text, ScrollView } from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AppointmentCard from '../components/AppointmentCard'
 import LoadingScreen from '../components/LoadingScreen';
 import CustomSegmentedControl from '../components/CustomSegmentedControl';
-import {getPastAppointments, getUpcomingAppointments} from '../api/patientAPI'
+import { getPastAppointments, getUpcomingAppointments } from '../api/patientAPI'
 import { useScreenRefresh } from '../ScreenRefreshContext';
 
 function AppointmentScreen() {
@@ -14,25 +14,25 @@ function AppointmentScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const { refreshTrigger } = useScreenRefresh();
-  
+
   // Function to load appointments from API
   const fetchAppointments = useCallback(async () => {
     setLoading(true);
-    try{
+    try {
       const upcoming = await getUpcomingAppointments();
       const past = await getPastAppointments();
-      
+
       setUpcomingAppointments(upcoming);
 
-       // Sort past appointments by date (latest to oldest)
+      // Sort past appointments by date (latest to oldest)
       const sortedPast = past.sort((a, b) => {
         return new Date(b.appointmentDateTime) - new Date(a.appointmentDateTime);
       });
-      
+
       setPastAppointments(sortedPast);
 
     }
-    catch(err){
+    catch (err) {
       console.error('Error fetching appointments:', err);
     } finally {
       setLoading(false);
@@ -61,16 +61,16 @@ function AppointmentScreen() {
   // Empty state component
   const EmptyState = ({ isUpcoming }) => (
     <View style={styles.emptyStateContainer}>
-      <Icon 
-        name={isUpcoming ? "calendar-plus" : "calendar-check"} 
-        size={80} 
-        color="#ccc" 
+      <Icon
+        name={isUpcoming ? "calendar-plus" : "calendar-check"}
+        size={80}
+        color="#ccc"
       />
       <Text style={styles.emptyStateTitle}>
         {isUpcoming ? "No Upcoming Appointments" : "No Past Appointments"}
       </Text>
       <Text style={styles.emptyStateSubtitle}>
-        {isUpcoming 
+        {isUpcoming
           ? "You don't have any scheduled appointments. Contact your healthcare provider to book an appointment."
           : "You haven't had any appointments yet. Your appointment history will appear here once you visit your healthcare provider."
         }
@@ -84,8 +84,8 @@ function AppointmentScreen() {
   // SHOW LOADING SCREEN
   if (loading) {
     return (
-      <LoadingScreen 
-        message="Loading your appointments..." 
+      <LoadingScreen
+        message="Loading your appointments..."
         icon="calendar-today"
         backgroundColor="#f5f5f5"
         primaryColor="#2F7EF5"
@@ -114,10 +114,10 @@ function AppointmentScreen() {
         inactiveTextColor="black"
         activeTextColor="black"
         backgroundColor='#CFCFCF'
-        style={{ 
-          fontSize: 15, 
-          fontWeight: '500', 
-          height: 50, 
+        style={{
+          fontSize: 15,
+          fontWeight: '500',
+          height: 50,
           borderRadius: 20,
         }}
       />
@@ -138,6 +138,7 @@ function AppointmentScreen() {
         </ScrollView>
       ) : (
         <FlatList
+          testID="appointments-flatlist"
           data={currentData}
           refreshControl={
             <RefreshControl

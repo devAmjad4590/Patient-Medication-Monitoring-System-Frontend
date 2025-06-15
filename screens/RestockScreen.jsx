@@ -31,8 +31,8 @@ export default function RestockScreen({ route, navigation }) {
   // 3️⃣ Loader until we have the data
   if (!selectedMedication) {
     return (
-      <View style={[styles.root, { justifyContent: 'center' }]}>
-        <ActivityIndicator size="large" />
+      <View style={[styles.root, { justifyContent: 'center' }]} testID="loading-container">
+        <ActivityIndicator size="large" testID="loading-indicator" />
       </View>
     );
   }
@@ -42,7 +42,7 @@ export default function RestockScreen({ route, navigation }) {
     setQuantity(value.replace(/[^0-9]/g, ''));
   }
 
-  // 5️⃣ Stub for when the user taps “Complete Restock”
+  // 5️⃣ Stub for when the user taps "Complete Restock"
   function handleSubmit() {
     if(quantity === '') {
       alert("Please enter a quantity to restock.");
@@ -61,11 +61,12 @@ export default function RestockScreen({ route, navigation }) {
   }
 
   return (
-    <View style={styles.root}>
+    <View style={styles.root} testID="restock-screen">
       <View style={styles.content}>
         <View style={styles.row}>
-          <Text style={styles.textStyle}>Add amount:</Text>
+          <Text style={styles.textStyle} testID="add-amount-label">Add amount:</Text>
           <TextInput
+            testID="quantity-input"
             style={styles.input}
             value={quantity}
             onChangeText={handleInputChange}
@@ -77,7 +78,12 @@ export default function RestockScreen({ route, navigation }) {
       </View>
 
       <View style={styles.button}>
-        <PrimaryButton onPress={handleSubmit}>Complete Restock</PrimaryButton>
+        <PrimaryButton 
+          onPress={handleSubmit}
+          testID="complete-restock-button"
+        >
+          Complete Restock
+        </PrimaryButton>
       </View>
     </View>
   );
