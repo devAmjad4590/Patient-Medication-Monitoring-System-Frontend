@@ -53,12 +53,17 @@ function AppNavigation() {
         console.log('🔔 Notification received in foreground:', notification);
         console.log('📄 Notification content:', notification.request.content);
         await storeNotification(notification);
-        
-        // Show an alert for debugging
-        Alert.alert(
-          'Notification Received!', 
-          `${notification.request.content.title}: ${notification.request.content.body}`
-        );
+
+        const { medications, time } = notification.request.content.data || {};
+        console.log(notification.request.content.data)
+        if (medications && navigationRef.isReady()) {
+          console.log('🧭 Navigating to Reminder screen...');
+          navigationRef.navigate('Reminder', {
+            medicationIds: medications,
+            time: time,
+          });
+        }
+      
       }
     );
 
