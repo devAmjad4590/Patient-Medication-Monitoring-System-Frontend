@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 40,
-    fontWeight: '600', // Fixed from 'semi-bold'
+    fontWeight: 'semi-bold',
     bottom: 30,
     color: 'white',
   },

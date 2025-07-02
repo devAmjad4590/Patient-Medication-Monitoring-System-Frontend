@@ -130,7 +130,7 @@ function NotificationDrawer() {
                 const notificationData = getNotificationData(notification);
                 return (
                   <NotificationCard
-                    key={notificationData.id}
+                    key={`${notificationData.id}-${notificationData.receivedAt}`}
                     title={notificationData.title}
                     message={notificationData.body}
                   />
